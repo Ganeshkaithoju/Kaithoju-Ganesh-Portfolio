@@ -518,7 +518,7 @@ function Experience() {
       title: "Intern — Backup & Restore",
       company: "Lumen Technologies India",
       period: "2026 — Present",
-      location: "Hyderabad, IN",
+      location: "Bengaluru, IN",
       current: true,
       icon: HardDrive,
       bullets: [
