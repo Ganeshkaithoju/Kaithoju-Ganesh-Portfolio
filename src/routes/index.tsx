@@ -93,7 +93,7 @@ const TIMELINE = [
   { year: "2022", title: "Started B.Tech (ECE)", desc: "Began Electronics & Communication Engineering at Narasimha Reddy Engineering College.", icon: Code2 },
   { year: "2025", title: "Python Intern @ YBI Foundation", desc: "Built projects like Tic-Tac-Toe and Rock-Paper-Scissors while learning core Python.", icon: Rocket },
   { year: "2025", title: "Summer Intern @ BHEL", desc: "Team member on a thermal power systems project — analysed PLC and CNC processes at BHEL Hyderabad.", icon: Briefcase },
-  { year: "2026", title: "Intern @ Lumen Technologies", desc: "Intern on the Backup & Restore team at Lumen Technologies India — Hyderabad.", icon: HardDrive },
+  { year: "2026", title: "Intern @ Lumen Technologies", desc: "Intern on the Backup & Restore team at Lumen Technologies India — Bengaluru.", icon: HardDrive },
 ];
 
 const SERVICES = [
@@ -378,7 +378,7 @@ function Hero() {
         <div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.4 }} className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs">
             <span aria-hidden="true" className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-primary" /></span>
-            Intern @ Lumen · Backup &amp; Restore · Hyderabad, IN
+            Intern @ Lumen · Backup &amp; Restore · Bengaluru, IN
           </motion.div>
           <motion.h1 id="hero-title" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.5 }} className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-[5.5rem]">
             Hi, I'm <span className="text-gradient">Ganesh</span>.<br />
@@ -518,7 +518,7 @@ function Experience() {
       title: "Intern — Backup & Restore",
       company: "Lumen Technologies India",
       period: "2026 — Present",
-      location: "Hyderabad, IN",
+      location: "Bengaluru, IN",
       current: true,
       icon: HardDrive,
       bullets: [
