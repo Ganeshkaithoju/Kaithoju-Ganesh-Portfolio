@@ -124,7 +124,7 @@ const ACHIEVEMENTS = [
   { label: "B.Tech CGPA", value: "8.42", suffix: "/10" },
   { label: "SSC CGPA", value: "10", suffix: "/10" },
   { label: "Projects", value: "4", suffix: "+" },
-  { label: "Certifications", value: "4", suffix: "" },
+  { label: "Certifications", value: "10", suffix: "+" },
 ];
 
 const CERTIFICATIONS = [
