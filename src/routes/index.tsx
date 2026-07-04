@@ -392,7 +392,7 @@ function Hero() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.85 }} className="mt-8 flex flex-wrap items-center gap-3">
             <MagneticButton href="#projects">View my work <ArrowUpRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></MagneticButton>
             <MagneticButton href="#contact" variant="ghost">Get in touch <ArrowRight aria-hidden="true" className="h-4 w-4" /></MagneticButton>
-            <a href={RESUME_URL} download="Ganesh_Kaithoju_Resume.pdf" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+            <a href={RESUME_URL} download="Ganesh_Kaithoju_Resume.pdf" rel="noopener" className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
               <Download aria-hidden="true" className="h-4 w-4" /> Download Resume
             </a>
           </motion.div>
