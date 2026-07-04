@@ -685,7 +685,11 @@ function Projects() {
                 </div>
                 <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-4 text-sm">
                   <span className="inline-flex items-center gap-1 text-muted-foreground"><Sparkles aria-hidden="true" className="h-3.5 w-3.5" /> Academic Project</span>
-                  <a href={GITHUB} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded" aria-label={`View ${p.title} related work on GitHub`}>GitHub <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" /></a>
+                  {p.embedded ? (
+                    <span className="inline-flex items-center gap-1 text-muted-foreground/80"><CircuitBoard aria-hidden="true" className="h-3.5 w-3.5" /> Hardware Build</span>
+                  ) : (
+                    <a href={GITHUB} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded" aria-label={`View ${p.title} related work on GitHub`}>GitHub <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" /></a>
+                  )}
                 </div>
               </div>
             </motion.article>
