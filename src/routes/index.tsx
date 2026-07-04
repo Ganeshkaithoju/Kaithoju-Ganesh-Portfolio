@@ -60,6 +60,7 @@ const PROJECTS = [
     tech: ["Arduino UNO", "NodeMCU (ESP8266)", "Embedded C", "Sensors"],
     icon: Leaf,
     accent: "from-emerald-400 to-teal-500",
+    embedded: true,
   },
   {
     title: "Spoonie — Self-Stabilizing Feeding Spoon",
@@ -68,6 +69,7 @@ const PROJECTS = [
     tech: ["Arduino UNO", "ADXL345", "Servo Motor", "Embedded C"],
     icon: Utensils,
     accent: "from-amber-400 to-orange-500",
+    embedded: true,
   },
   {
     title: "Hospital Management System",
