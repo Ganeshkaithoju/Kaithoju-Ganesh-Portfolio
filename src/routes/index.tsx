@@ -60,6 +60,7 @@ const PROJECTS = [
     tech: ["Arduino UNO", "NodeMCU (ESP8266)", "Embedded C", "Sensors"],
     icon: Leaf,
     accent: "from-emerald-400 to-teal-500",
+    embedded: true,
   },
   {
     title: "Spoonie — Self-Stabilizing Feeding Spoon",
@@ -68,6 +69,7 @@ const PROJECTS = [
     tech: ["Arduino UNO", "ADXL345", "Servo Motor", "Embedded C"],
     icon: Utensils,
     accent: "from-amber-400 to-orange-500",
+    embedded: true,
   },
   {
     title: "Hospital Management System",
@@ -122,7 +124,7 @@ const ACHIEVEMENTS = [
   { label: "B.Tech CGPA", value: "8.42", suffix: "/10" },
   { label: "SSC CGPA", value: "10", suffix: "/10" },
   { label: "Projects", value: "4", suffix: "+" },
-  { label: "Certifications", value: "4", suffix: "" },
+  { label: "Certifications", value: "10", suffix: "+" },
 ];
 
 const CERTIFICATIONS = [
@@ -390,7 +392,7 @@ function Hero() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.85 }} className="mt-8 flex flex-wrap items-center gap-3">
             <MagneticButton href="#projects">View my work <ArrowUpRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></MagneticButton>
             <MagneticButton href="#contact" variant="ghost">Get in touch <ArrowRight aria-hidden="true" className="h-4 w-4" /></MagneticButton>
-            <a href={RESUME_URL} download="Ganesh_Kaithoju_Resume.pdf" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+            <a href={RESUME_URL} download="Ganesh_Kaithoju_Resume.pdf" rel="noopener" className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
               <Download aria-hidden="true" className="h-4 w-4" /> Download Resume
             </a>
           </motion.div>
@@ -683,7 +685,11 @@ function Projects() {
                 </div>
                 <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-4 text-sm">
                   <span className="inline-flex items-center gap-1 text-muted-foreground"><Sparkles aria-hidden="true" className="h-3.5 w-3.5" /> Academic Project</span>
-                  <a href={GITHUB} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded" aria-label={`View ${p.title} related work on GitHub`}>GitHub <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" /></a>
+                  {p.embedded ? (
+                    <span className="inline-flex items-center gap-1 text-muted-foreground/80"><CircuitBoard aria-hidden="true" className="h-3.5 w-3.5" /> Hardware Build</span>
+                  ) : (
+                    <a href={GITHUB} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded" aria-label={`View ${p.title} related work on GitHub`}>GitHub <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" /></a>
+                  )}
                 </div>
               </div>
             </motion.article>
@@ -927,7 +933,7 @@ function Footer() {
           <a aria-label="LinkedIn" href={LINKEDIN} target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Linkedin aria-hidden="true" className="h-5 w-5" /></a>
           <a aria-label="GitHub" href={GITHUB} target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Github aria-hidden="true" className="h-5 w-5" /></a>
           <a aria-label="Email" href={`mailto:${EMAIL}`} className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Mail aria-hidden="true" className="h-5 w-5" /></a>
-          <a aria-label="Download resume" href={RESUME_URL} download="Ganesh_Kaithoju_Resume.pdf" target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Download aria-hidden="true" className="h-5 w-5" /></a>
+          <a aria-label="Download resume" href={RESUME_URL} download="Ganesh_Kaithoju_Resume.pdf" rel="noopener" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Download aria-hidden="true" className="h-5 w-5" /></a>
         </nav>
         <div className="text-center text-xs text-muted-foreground md:text-right">
           <div>© {new Date().getFullYear()} Kaithoju Ganesh. All rights reserved.</div>
