@@ -933,7 +933,7 @@ function Footer() {
           <a aria-label="LinkedIn" href={LINKEDIN} target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Linkedin aria-hidden="true" className="h-5 w-5" /></a>
           <a aria-label="GitHub" href={GITHUB} target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Github aria-hidden="true" className="h-5 w-5" /></a>
           <a aria-label="Email" href={`mailto:${EMAIL}`} className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Mail aria-hidden="true" className="h-5 w-5" /></a>
-          <a aria-label="Download resume" href={RESUME_URL} download="Ganesh_Kaithoju_Resume.pdf" target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Download aria-hidden="true" className="h-5 w-5" /></a>
+          <a aria-label="Download resume" href={RESUME_URL} download="Ganesh_Kaithoju_Resume.pdf" rel="noopener" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Download aria-hidden="true" className="h-5 w-5" /></a>
         </nav>
         <div className="text-center text-xs text-muted-foreground md:text-right">
           <div>© {new Date().getFullYear()} Kaithoju Ganesh. All rights reserved.</div>
