@@ -856,19 +856,14 @@ function Contact() {
         const whatsappResult = await sendToWhatsApp(parsed.data, gasUrl);
         if (!whatsappResult.success) {
           console.warn("WhatsApp notification failed:", whatsappResult.error);
-          // Don't fail the overall submission - message is still in Supabase
-          toast.warning("Message saved, but WhatsApp notification couldn't be sent.");
-        } else {
-          toast.success("Message sent — I'll get back to you soon! 📲");
         }
-      } else {
-        toast.success("Message sent — I'll get back to you soon!");
       }
-      
+
+      toast.success("Thank you for sending message. I appreciate your time and efforts. I have successfully received your message");
       (e.currentTarget as HTMLFormElement).reset();
     } catch (err) {
       console.error("Contact submission failed", err);
-      toast.error("Couldn't send your message. Please email me directly.");
+      toast.error("There is a failure occurred while sharing your message, please try after some time");
     } finally {
       setSubmitting(false);
     }
