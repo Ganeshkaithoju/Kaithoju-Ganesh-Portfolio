@@ -14,29 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_credentials: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          password_hash: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          password_hash: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          password_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
           email: string
           id: string
+          is_approved: boolean
+          is_featured: boolean
+          is_pinned: boolean
           message: string
+          moderated_at: string | null
           name: string
+          status: string
           subject: string
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
+          is_approved?: boolean
+          is_featured?: boolean
+          is_pinned?: boolean
           message: string
+          moderated_at?: string | null
           name: string
+          status?: string
           subject: string
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
+          is_approved?: boolean
+          is_featured?: boolean
+          is_pinned?: boolean
           message?: string
+          moderated_at?: string | null
           name?: string
+          status?: string
           subject?: string
         }
         Relationships: []

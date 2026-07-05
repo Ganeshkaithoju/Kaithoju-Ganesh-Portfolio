@@ -28,11 +28,6 @@ import { Route as ApiAdminStatsRouteImport } from './routes/api/admin/stats'
 import { Route as ApiAdminPendingRouteImport } from './routes/api/admin/pending'
 import { Route as ApiAdminMessagesRouteImport } from './routes/api/admin/messages'
 import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
-import { Route as ApiOwnerMessagesChar91idChar93PinRouteImport } from './routes/api/owner/messages/[id]/pin'
-import { Route as ApiOwnerMessagesChar91idChar93HideRouteImport } from './routes/api/owner/messages/[id]/hide'
-import { Route as ApiOwnerMessagesChar91idChar93FeatureRouteImport } from './routes/api/owner/messages/[id]/feature'
-import { Route as ApiOwnerMessagesChar91idChar93DeleteRouteImport } from './routes/api/owner/messages/[id]/delete'
-import { Route as ApiOwnerMessagesChar91idChar93ApproveRouteImport } from './routes/api/owner/messages/[id]/approve'
 import { Route as ApiOwnerMessagesIdPinRouteImport } from './routes/api/owner/messages/$id/pin'
 import { Route as ApiOwnerMessagesIdHideRouteImport } from './routes/api/owner/messages/$id/hide'
 import { Route as ApiOwnerMessagesIdFeatureRouteImport } from './routes/api/owner/messages/$id/feature'
@@ -140,36 +135,6 @@ const ApiAdminLoginRoute = ApiAdminLoginRouteImport.update({
   path: '/api/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiOwnerMessagesChar91idChar93PinRoute =
-  ApiOwnerMessagesChar91idChar93PinRouteImport.update({
-    id: '/id/pin',
-    path: '/id/pin',
-    getParentRoute: () => ApiOwnerMessagesRoute,
-  } as any)
-const ApiOwnerMessagesChar91idChar93HideRoute =
-  ApiOwnerMessagesChar91idChar93HideRouteImport.update({
-    id: '/id/hide',
-    path: '/id/hide',
-    getParentRoute: () => ApiOwnerMessagesRoute,
-  } as any)
-const ApiOwnerMessagesChar91idChar93FeatureRoute =
-  ApiOwnerMessagesChar91idChar93FeatureRouteImport.update({
-    id: '/id/feature',
-    path: '/id/feature',
-    getParentRoute: () => ApiOwnerMessagesRoute,
-  } as any)
-const ApiOwnerMessagesChar91idChar93DeleteRoute =
-  ApiOwnerMessagesChar91idChar93DeleteRouteImport.update({
-    id: '/id/delete',
-    path: '/id/delete',
-    getParentRoute: () => ApiOwnerMessagesRoute,
-  } as any)
-const ApiOwnerMessagesChar91idChar93ApproveRoute =
-  ApiOwnerMessagesChar91idChar93ApproveRouteImport.update({
-    id: '/id/approve',
-    path: '/id/approve',
-    getParentRoute: () => ApiOwnerMessagesRoute,
-  } as any)
 const ApiOwnerMessagesIdPinRoute = ApiOwnerMessagesIdPinRouteImport.update({
   id: '/$id/pin',
   path: '/$id/pin',
@@ -259,11 +224,6 @@ export interface FileRoutesByFullPath {
   '/api/owner/messages/$id/feature': typeof ApiOwnerMessagesIdFeatureRoute
   '/api/owner/messages/$id/hide': typeof ApiOwnerMessagesIdHideRoute
   '/api/owner/messages/$id/pin': typeof ApiOwnerMessagesIdPinRoute
-  '/api/owner/messages/id/approve': typeof ApiOwnerMessagesChar91idChar93ApproveRoute
-  '/api/owner/messages/id/delete': typeof ApiOwnerMessagesChar91idChar93DeleteRoute
-  '/api/owner/messages/id/feature': typeof ApiOwnerMessagesChar91idChar93FeatureRoute
-  '/api/owner/messages/id/hide': typeof ApiOwnerMessagesChar91idChar93HideRoute
-  '/api/owner/messages/id/pin': typeof ApiOwnerMessagesChar91idChar93PinRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -295,11 +255,6 @@ export interface FileRoutesByTo {
   '/api/owner/messages/$id/feature': typeof ApiOwnerMessagesIdFeatureRoute
   '/api/owner/messages/$id/hide': typeof ApiOwnerMessagesIdHideRoute
   '/api/owner/messages/$id/pin': typeof ApiOwnerMessagesIdPinRoute
-  '/api/owner/messages/id/approve': typeof ApiOwnerMessagesChar91idChar93ApproveRoute
-  '/api/owner/messages/id/delete': typeof ApiOwnerMessagesChar91idChar93DeleteRoute
-  '/api/owner/messages/id/feature': typeof ApiOwnerMessagesChar91idChar93FeatureRoute
-  '/api/owner/messages/id/hide': typeof ApiOwnerMessagesChar91idChar93HideRoute
-  '/api/owner/messages/id/pin': typeof ApiOwnerMessagesChar91idChar93PinRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -332,11 +287,6 @@ export interface FileRoutesById {
   '/api/owner/messages/$id/feature': typeof ApiOwnerMessagesIdFeatureRoute
   '/api/owner/messages/$id/hide': typeof ApiOwnerMessagesIdHideRoute
   '/api/owner/messages/$id/pin': typeof ApiOwnerMessagesIdPinRoute
-  '/api/owner/messages/id/approve': typeof ApiOwnerMessagesChar91idChar93ApproveRoute
-  '/api/owner/messages/id/delete': typeof ApiOwnerMessagesChar91idChar93DeleteRoute
-  '/api/owner/messages/id/feature': typeof ApiOwnerMessagesChar91idChar93FeatureRoute
-  '/api/owner/messages/id/hide': typeof ApiOwnerMessagesChar91idChar93HideRoute
-  '/api/owner/messages/id/pin': typeof ApiOwnerMessagesChar91idChar93PinRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -370,11 +320,6 @@ export interface FileRouteTypes {
     | '/api/owner/messages/$id/feature'
     | '/api/owner/messages/$id/hide'
     | '/api/owner/messages/$id/pin'
-    | '/api/owner/messages/id/approve'
-    | '/api/owner/messages/id/delete'
-    | '/api/owner/messages/id/feature'
-    | '/api/owner/messages/id/hide'
-    | '/api/owner/messages/id/pin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -406,11 +351,6 @@ export interface FileRouteTypes {
     | '/api/owner/messages/$id/feature'
     | '/api/owner/messages/$id/hide'
     | '/api/owner/messages/$id/pin'
-    | '/api/owner/messages/id/approve'
-    | '/api/owner/messages/id/delete'
-    | '/api/owner/messages/id/feature'
-    | '/api/owner/messages/id/hide'
-    | '/api/owner/messages/id/pin'
   id:
     | '__root__'
     | '/'
@@ -442,11 +382,6 @@ export interface FileRouteTypes {
     | '/api/owner/messages/$id/feature'
     | '/api/owner/messages/$id/hide'
     | '/api/owner/messages/$id/pin'
-    | '/api/owner/messages/id/approve'
-    | '/api/owner/messages/id/delete'
-    | '/api/owner/messages/id/feature'
-    | '/api/owner/messages/id/hide'
-    | '/api/owner/messages/id/pin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -606,41 +541,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/owner/messages/id/pin': {
-      id: '/api/owner/messages/id/pin'
-      path: '/id/pin'
-      fullPath: '/api/owner/messages/id/pin'
-      preLoaderRoute: typeof ApiOwnerMessagesChar91idChar93PinRouteImport
-      parentRoute: typeof ApiOwnerMessagesRoute
-    }
-    '/api/owner/messages/id/hide': {
-      id: '/api/owner/messages/id/hide'
-      path: '/id/hide'
-      fullPath: '/api/owner/messages/id/hide'
-      preLoaderRoute: typeof ApiOwnerMessagesChar91idChar93HideRouteImport
-      parentRoute: typeof ApiOwnerMessagesRoute
-    }
-    '/api/owner/messages/id/feature': {
-      id: '/api/owner/messages/id/feature'
-      path: '/id/feature'
-      fullPath: '/api/owner/messages/id/feature'
-      preLoaderRoute: typeof ApiOwnerMessagesChar91idChar93FeatureRouteImport
-      parentRoute: typeof ApiOwnerMessagesRoute
-    }
-    '/api/owner/messages/id/delete': {
-      id: '/api/owner/messages/id/delete'
-      path: '/id/delete'
-      fullPath: '/api/owner/messages/id/delete'
-      preLoaderRoute: typeof ApiOwnerMessagesChar91idChar93DeleteRouteImport
-      parentRoute: typeof ApiOwnerMessagesRoute
-    }
-    '/api/owner/messages/id/approve': {
-      id: '/api/owner/messages/id/approve'
-      path: '/id/approve'
-      fullPath: '/api/owner/messages/id/approve'
-      preLoaderRoute: typeof ApiOwnerMessagesChar91idChar93ApproveRouteImport
-      parentRoute: typeof ApiOwnerMessagesRoute
-    }
     '/api/owner/messages/$id/pin': {
       id: '/api/owner/messages/$id/pin'
       path: '/$id/pin'
@@ -744,11 +644,6 @@ interface ApiOwnerMessagesRouteChildren {
   ApiOwnerMessagesIdFeatureRoute: typeof ApiOwnerMessagesIdFeatureRoute
   ApiOwnerMessagesIdHideRoute: typeof ApiOwnerMessagesIdHideRoute
   ApiOwnerMessagesIdPinRoute: typeof ApiOwnerMessagesIdPinRoute
-  ApiOwnerMessagesChar91idChar93ApproveRoute: typeof ApiOwnerMessagesChar91idChar93ApproveRoute
-  ApiOwnerMessagesChar91idChar93DeleteRoute: typeof ApiOwnerMessagesChar91idChar93DeleteRoute
-  ApiOwnerMessagesChar91idChar93FeatureRoute: typeof ApiOwnerMessagesChar91idChar93FeatureRoute
-  ApiOwnerMessagesChar91idChar93HideRoute: typeof ApiOwnerMessagesChar91idChar93HideRoute
-  ApiOwnerMessagesChar91idChar93PinRoute: typeof ApiOwnerMessagesChar91idChar93PinRoute
 }
 
 const ApiOwnerMessagesRouteChildren: ApiOwnerMessagesRouteChildren = {
@@ -757,16 +652,6 @@ const ApiOwnerMessagesRouteChildren: ApiOwnerMessagesRouteChildren = {
   ApiOwnerMessagesIdFeatureRoute: ApiOwnerMessagesIdFeatureRoute,
   ApiOwnerMessagesIdHideRoute: ApiOwnerMessagesIdHideRoute,
   ApiOwnerMessagesIdPinRoute: ApiOwnerMessagesIdPinRoute,
-  ApiOwnerMessagesChar91idChar93ApproveRoute:
-    ApiOwnerMessagesChar91idChar93ApproveRoute,
-  ApiOwnerMessagesChar91idChar93DeleteRoute:
-    ApiOwnerMessagesChar91idChar93DeleteRoute,
-  ApiOwnerMessagesChar91idChar93FeatureRoute:
-    ApiOwnerMessagesChar91idChar93FeatureRoute,
-  ApiOwnerMessagesChar91idChar93HideRoute:
-    ApiOwnerMessagesChar91idChar93HideRoute,
-  ApiOwnerMessagesChar91idChar93PinRoute:
-    ApiOwnerMessagesChar91idChar93PinRoute,
 }
 
 const ApiOwnerMessagesRouteWithChildren =
@@ -796,13 +681,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
