@@ -17,16 +17,16 @@ OWNER_EMAIL=your_email@example.com
 OWNER_PASSWORD=your_secure_password
 
 # Security Questions Answers
-SECURITY_ANSWER_1=BMW
-SECURITY_ANSWER_2=Samsung s3 neo
+SECURITY_ANSWER_1=answer1
+SECURITY_ANSWER_2=answer2
 ```
 
 **Example:**
 ```env
 OWNER_EMAIL=ganesh@example.com
 OWNER_PASSWORD=MyPassword123!
-SECURITY_ANSWER_1=BMW
-SECURITY_ANSWER_2=Samsung s3 neo
+SECURITY_ANSWER_1=answer1
+SECURITY_ANSWER_2=answer2
 ```
 
 ### Step 2: Customize Your Security Answers (Optional)
@@ -34,11 +34,11 @@ SECURITY_ANSWER_2=Samsung s3 neo
 The questions are fixed, but you can customize the answers:
 
 **Q1: What is your dream car?**
-- Current answer: `BMW`
+- Current answer: `answer1`
 - Change to: Any answer you want (e.g., `Tesla`, `Ferrari`)
 
 **Q2: What is your first mobile name?**
-- Current answer: `Samsung s3 neo`
+- Current answer: `answer2`
 - Change to: Any answer you want (e.g., `iPhone 4`, `Nokia 3310`)
 
 Just update the environment variables:
@@ -94,7 +94,6 @@ Redirected to dashboard
 - Must answer both correctly
 
 ✅ **Case-Insensitive**
-- "BMW" = "bmw" = "Bmw" ✓
 - Answers are automatically normalized
 
 ✅ **Session Creation**
@@ -109,7 +108,6 @@ Redirected to dashboard
 Answer you configured in `SECURITY_ANSWER_1`
 
 **Examples:**
-- BMW
 - Tesla
 - Ferrari
 - Lamborghini
@@ -119,7 +117,6 @@ Answer you configured in `SECURITY_ANSWER_1`
 Answer you configured in `SECURITY_ANSWER_2`
 
 **Examples:**
-- Samsung s3 neo
 - iPhone 4
 - Nokia 3310
 - HTC Hero
@@ -140,9 +137,9 @@ Answer you configured in `SECURITY_ANSWER_2`
 ## Important Notes
 
 ### Answers Must Match EXACTLY
-- Whitespace is trimmed: `"BMW"` = `" BMW "`
-- Case is ignored: `"BMW"` = `"bmw"`
-- Punctuation matters: `"S3 Neo"` ≠ `"S3Neo"`
+- Whitespace is trimmed: `"ANSWER"` = `" ANSWER "`
+- Case is ignored: `"ANSWER"` = `"answer"`
+- Punctuation matters: `"A3 Abc"` ≠ `"A3Abc"`
 
 ### Recovery Process
 If you forget your answers:
@@ -223,8 +220,8 @@ But the answers are always configured via environment variables.
 ```env
 OWNER_EMAIL=ganesh@example.com
 OWNER_PASSWORD=MySecurePassword123!
-SECURITY_ANSWER_1=BMW
-SECURITY_ANSWER_2=Samsung s3 neo
+SECURITY_ANSWER_1=answer1
+SECURITY_ANSWER_2=answer2
 ```
 
 ### Forgot Password Flow
@@ -250,8 +247,8 @@ Redirected to dashboard
 
 ## Complete Setup Checklist
 
-- [ ] Add `SECURITY_ANSWER_1=BMW` to `.env.local`
-- [ ] Add `SECURITY_ANSWER_2=Samsung s3 neo` to `.env.local`
+- [ ] Add `SECURITY_ANSWER_1=answer1` to `.env.local`
+- [ ] Add `SECURITY_ANSWER_2=answer2` to `.env.local`
 - [ ] (Optional) Customize the answers to your own
 - [ ] Restart dev server: `npm run dev`
 - [ ] Test the forgot password flow

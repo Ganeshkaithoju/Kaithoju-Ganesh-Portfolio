@@ -8,8 +8,6 @@ Add to `.env.local`:
 OWNER_EMAIL=your_email@example.com
 OWNER_PASSWORD=your_password
 
-SECURITY_ANSWER_1=BMW
-SECURITY_ANSWER_2=Samsung s3 neo
 ```
 
 ## How to Use
@@ -26,17 +24,17 @@ SECURITY_ANSWER_2=Samsung s3 neo
 ## The Questions
 
 **Q1: What is your dream car?**
-- Default: BMW
+- Default: answer1
 - Change in `.env.local`: `SECURITY_ANSWER_1=Your answer`
 
 **Q2: What is your first mobile name?**
-- Default: Samsung s3 neo
+- Default: answer2
 - Change in `.env.local`: `SECURITY_ANSWER_2=Your answer`
 
 ## Important
 
-- Answers are **case-insensitive** (BMW = bmw)
-- Whitespace is trimmed (" BMW " = "BMW")
+- Answers are **case-insensitive** 
+- Whitespace is trimmed 
 - Spelling must match exactly
 - Both questions must be answered correctly
 
