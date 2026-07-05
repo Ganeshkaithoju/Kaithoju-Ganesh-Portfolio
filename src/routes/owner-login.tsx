@@ -159,12 +159,12 @@ function OwnerLogin() {
             </a>
           </div>
 
-          {/* Info */}
-          <div className="mt-6 rounded-lg border border-white/10 bg-white/3 p-4 text-xs text-muted-foreground">
+          {/* Info - not required*/}
+          {/* <div className="mt-6 rounded-lg border border-white/10 bg-white/3 p-4 text-xs text-muted-foreground">
             <p className="font-medium text-foreground mb-2">Credentials:</p>
             <p>Email: from environment variable</p>
             <p className="mt-1">Password: from environment variable</p>
-          </div>
+          </div> */}
         </div>
       </motion.div>
     </div>
