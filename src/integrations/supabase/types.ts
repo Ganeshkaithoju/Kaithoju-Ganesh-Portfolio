@@ -19,24 +19,39 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          is_approved: boolean
+          is_featured: boolean
+          is_pinned: boolean
           message: string
+          moderated_at: string | null
           name: string
+          status: string
           subject: string
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
+          is_approved?: boolean
+          is_featured?: boolean
+          is_pinned?: boolean
           message: string
+          moderated_at?: string | null
           name: string
+          status?: string
           subject: string
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
+          is_approved?: boolean
+          is_featured?: boolean
+          is_pinned?: boolean
           message?: string
+          moderated_at?: string | null
           name?: string
+          status?: string
           subject?: string
         }
         Relationships: []
