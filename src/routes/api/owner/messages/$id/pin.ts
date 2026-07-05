@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getOwnerSessionFromRequest, isSessionValid } from "@/lib/owner-auth.server";
 
-export const Route = createFileRoute("/api/owner/messages/id/pin")({
+export const Route = createFileRoute("/api/owner/messages/$id/pin")({
   server: {
     handlers: {
       POST: async ({ request, params }) => {
