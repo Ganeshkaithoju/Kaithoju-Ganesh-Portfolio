@@ -7,7 +7,9 @@ import {
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { sendToWhatsApp } from "@/lib/whatsapp-integration.server";
 import resumeAsset from "@/assets/resume.pdf.asset.json";
+import { PublicComments } from "@/components/PublicComments";
 
 export const Route = createFileRoute("/")({ component: PortfolioPage });
 
@@ -276,6 +278,7 @@ function PortfolioPage() {
         <WhyHire />
         <Certifications />
         <Contact />
+        <PublicComments />
       </main>
 
       <Footer />
@@ -296,10 +299,10 @@ function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setN
   return (
     <>
       <motion.header initial={{ y: -40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, delay: 1.2 }} className={`fixed inset-x-0 top-4 z-50 mx-auto flex max-w-6xl items-center justify-between rounded-2xl px-4 py-3 transition-all sm:px-6 ${scrolled ? "glass-strong shadow-lg" : "glass"}`} style={{ width: "calc(100% - 2rem)" }}>
-        <a href="#home" className="group flex items-center gap-2" aria-label="Go to home">
+        <button onClick={() => window.location.href = "/owner-login"} className="group flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 px-2 py-1" aria-label="Owner dashboard">
           <div aria-hidden="true" className="grid h-9 w-9 place-items-center rounded-lg font-display text-sm font-bold text-primary-foreground" style={{ background: "var(--gradient-text)" }}>GK</div>
           <span className="hidden font-display text-sm font-semibold sm:inline">Ganesh Kaithoju</span>
-        </a>
+        </button>
         <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
           {NAV.map((n) => (
             <a key={n.href} href={n.href} className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">{n.label}</a>
@@ -843,9 +846,25 @@ function Contact() {
     }
     setSubmitting(true);
     try {
+      // Store in Supabase
       const { error } = await supabase.from("contact_messages").insert(parsed.data);
       if (error) throw error;
-      toast.success("Message sent — I'll get back to you soon!");
+
+      // Send to WhatsApp Cloud API via Google Apps Script
+      const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL;
+      if (gasUrl) {
+        const whatsappResult = await sendToWhatsApp(parsed.data, gasUrl);
+        if (!whatsappResult.success) {
+          console.warn("WhatsApp notification failed:", whatsappResult.error);
+          // Don't fail the overall submission - message is still in Supabase
+          toast.warning("Message saved, but WhatsApp notification couldn't be sent.");
+        } else {
+          toast.success("Message sent — I'll get back to you soon! 📲");
+        }
+      } else {
+        toast.success("Message sent — I'll get back to you soon!");
+      }
+      
       (e.currentTarget as HTMLFormElement).reset();
     } catch (err) {
       console.error("Contact submission failed", err);

@@ -10,12 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as OwnerLoginRouteImport } from './routes/owner-login'
+import { Route as OwnerForgotPasswordRouteImport } from './routes/owner-forgot-password'
+import { Route as OwnerDashboardRouteImport } from './routes/owner-dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as ApiOwnerStatsRouteImport } from './routes/api/owner/stats'
+import { Route as ApiOwnerResetPasswordRouteImport } from './routes/api/owner/reset-password'
+import { Route as ApiOwnerMigrateCredentialsRouteImport } from './routes/api/owner/migrate-credentials'
+import { Route as ApiOwnerMessagesRouteImport } from './routes/api/owner/messages'
+import { Route as ApiOwnerLogoutRouteImport } from './routes/api/owner/logout'
+import { Route as ApiOwnerLoginRouteImport } from './routes/api/owner/login'
+import { Route as ApiCommentsApprovedRouteImport } from './routes/api/comments/approved'
+import { Route as ApiAdminStatsRouteImport } from './routes/api/admin/stats'
+import { Route as ApiAdminPendingRouteImport } from './routes/api/admin/pending'
+import { Route as ApiAdminMessagesRouteImport } from './routes/api/admin/messages'
+import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
+import { Route as ApiOwnerMessagesChar91idChar93PinRouteImport } from './routes/api/owner/messages/[id]/pin'
+import { Route as ApiOwnerMessagesChar91idChar93HideRouteImport } from './routes/api/owner/messages/[id]/hide'
+import { Route as ApiOwnerMessagesChar91idChar93FeatureRouteImport } from './routes/api/owner/messages/[id]/feature'
+import { Route as ApiOwnerMessagesChar91idChar93DeleteRouteImport } from './routes/api/owner/messages/[id]/delete'
+import { Route as ApiOwnerMessagesChar91idChar93ApproveRouteImport } from './routes/api/owner/messages/[id]/approve'
+import { Route as ApiAdminMessagesChar91idChar93PinRouteImport } from './routes/api/admin/messages/[id]/pin'
+import { Route as ApiAdminMessagesChar91idChar93HideRouteImport } from './routes/api/admin/messages/[id]/hide'
+import { Route as ApiAdminMessagesChar91idChar93FeatureRouteImport } from './routes/api/admin/messages/[id]/feature'
+import { Route as ApiAdminMessagesChar91idChar93DeleteRouteImport } from './routes/api/admin/messages/[id]/delete'
+import { Route as ApiAdminMessagesChar91idChar93ApproveRouteImport } from './routes/api/admin/messages/[id]/approve'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerLoginRoute = OwnerLoginRouteImport.update({
+  id: '/owner-login',
+  path: '/owner-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerForgotPasswordRoute = OwnerForgotPasswordRouteImport.update({
+  id: '/owner-forgot-password',
+  path: '/owner-forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerDashboardRoute = OwnerDashboardRouteImport.update({
+  id: '/owner-dashboard',
+  path: '/owner-dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -28,35 +69,343 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/admin/dashboard',
+  path: '/admin/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOwnerStatsRoute = ApiOwnerStatsRouteImport.update({
+  id: '/api/owner/stats',
+  path: '/api/owner/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOwnerResetPasswordRoute = ApiOwnerResetPasswordRouteImport.update({
+  id: '/api/owner/reset-password',
+  path: '/api/owner/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOwnerMigrateCredentialsRoute =
+  ApiOwnerMigrateCredentialsRouteImport.update({
+    id: '/api/owner/migrate-credentials',
+    path: '/api/owner/migrate-credentials',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiOwnerMessagesRoute = ApiOwnerMessagesRouteImport.update({
+  id: '/api/owner/messages',
+  path: '/api/owner/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOwnerLogoutRoute = ApiOwnerLogoutRouteImport.update({
+  id: '/api/owner/logout',
+  path: '/api/owner/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOwnerLoginRoute = ApiOwnerLoginRouteImport.update({
+  id: '/api/owner/login',
+  path: '/api/owner/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCommentsApprovedRoute = ApiCommentsApprovedRouteImport.update({
+  id: '/api/comments/approved',
+  path: '/api/comments/approved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminStatsRoute = ApiAdminStatsRouteImport.update({
+  id: '/api/admin/stats',
+  path: '/api/admin/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminPendingRoute = ApiAdminPendingRouteImport.update({
+  id: '/api/admin/pending',
+  path: '/api/admin/pending',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminMessagesRoute = ApiAdminMessagesRouteImport.update({
+  id: '/api/admin/messages',
+  path: '/api/admin/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminLoginRoute = ApiAdminLoginRouteImport.update({
+  id: '/api/admin/login',
+  path: '/api/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOwnerMessagesChar91idChar93PinRoute =
+  ApiOwnerMessagesChar91idChar93PinRouteImport.update({
+    id: '/id/pin',
+    path: '/id/pin',
+    getParentRoute: () => ApiOwnerMessagesRoute,
+  } as any)
+const ApiOwnerMessagesChar91idChar93HideRoute =
+  ApiOwnerMessagesChar91idChar93HideRouteImport.update({
+    id: '/id/hide',
+    path: '/id/hide',
+    getParentRoute: () => ApiOwnerMessagesRoute,
+  } as any)
+const ApiOwnerMessagesChar91idChar93FeatureRoute =
+  ApiOwnerMessagesChar91idChar93FeatureRouteImport.update({
+    id: '/id/feature',
+    path: '/id/feature',
+    getParentRoute: () => ApiOwnerMessagesRoute,
+  } as any)
+const ApiOwnerMessagesChar91idChar93DeleteRoute =
+  ApiOwnerMessagesChar91idChar93DeleteRouteImport.update({
+    id: '/id/delete',
+    path: '/id/delete',
+    getParentRoute: () => ApiOwnerMessagesRoute,
+  } as any)
+const ApiOwnerMessagesChar91idChar93ApproveRoute =
+  ApiOwnerMessagesChar91idChar93ApproveRouteImport.update({
+    id: '/id/approve',
+    path: '/id/approve',
+    getParentRoute: () => ApiOwnerMessagesRoute,
+  } as any)
+const ApiAdminMessagesChar91idChar93PinRoute =
+  ApiAdminMessagesChar91idChar93PinRouteImport.update({
+    id: '/id/pin',
+    path: '/id/pin',
+    getParentRoute: () => ApiAdminMessagesRoute,
+  } as any)
+const ApiAdminMessagesChar91idChar93HideRoute =
+  ApiAdminMessagesChar91idChar93HideRouteImport.update({
+    id: '/id/hide',
+    path: '/id/hide',
+    getParentRoute: () => ApiAdminMessagesRoute,
+  } as any)
+const ApiAdminMessagesChar91idChar93FeatureRoute =
+  ApiAdminMessagesChar91idChar93FeatureRouteImport.update({
+    id: '/id/feature',
+    path: '/id/feature',
+    getParentRoute: () => ApiAdminMessagesRoute,
+  } as any)
+const ApiAdminMessagesChar91idChar93DeleteRoute =
+  ApiAdminMessagesChar91idChar93DeleteRouteImport.update({
+    id: '/id/delete',
+    path: '/id/delete',
+    getParentRoute: () => ApiAdminMessagesRoute,
+  } as any)
+const ApiAdminMessagesChar91idChar93ApproveRoute =
+  ApiAdminMessagesChar91idChar93ApproveRouteImport.update({
+    id: '/id/approve',
+    path: '/id/approve',
+    getParentRoute: () => ApiAdminMessagesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/owner-dashboard': typeof OwnerDashboardRoute
+  '/owner-forgot-password': typeof OwnerForgotPasswordRoute
+  '/owner-login': typeof OwnerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/admin/login': typeof ApiAdminLoginRoute
+  '/api/admin/messages': typeof ApiAdminMessagesRouteWithChildren
+  '/api/admin/pending': typeof ApiAdminPendingRoute
+  '/api/admin/stats': typeof ApiAdminStatsRoute
+  '/api/comments/approved': typeof ApiCommentsApprovedRoute
+  '/api/owner/login': typeof ApiOwnerLoginRoute
+  '/api/owner/logout': typeof ApiOwnerLogoutRoute
+  '/api/owner/messages': typeof ApiOwnerMessagesRouteWithChildren
+  '/api/owner/migrate-credentials': typeof ApiOwnerMigrateCredentialsRoute
+  '/api/owner/reset-password': typeof ApiOwnerResetPasswordRoute
+  '/api/owner/stats': typeof ApiOwnerStatsRoute
+  '/api/admin/messages/id/approve': typeof ApiAdminMessagesChar91idChar93ApproveRoute
+  '/api/admin/messages/id/delete': typeof ApiAdminMessagesChar91idChar93DeleteRoute
+  '/api/admin/messages/id/feature': typeof ApiAdminMessagesChar91idChar93FeatureRoute
+  '/api/admin/messages/id/hide': typeof ApiAdminMessagesChar91idChar93HideRoute
+  '/api/admin/messages/id/pin': typeof ApiAdminMessagesChar91idChar93PinRoute
+  '/api/owner/messages/id/approve': typeof ApiOwnerMessagesChar91idChar93ApproveRoute
+  '/api/owner/messages/id/delete': typeof ApiOwnerMessagesChar91idChar93DeleteRoute
+  '/api/owner/messages/id/feature': typeof ApiOwnerMessagesChar91idChar93FeatureRoute
+  '/api/owner/messages/id/hide': typeof ApiOwnerMessagesChar91idChar93HideRoute
+  '/api/owner/messages/id/pin': typeof ApiOwnerMessagesChar91idChar93PinRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/owner-dashboard': typeof OwnerDashboardRoute
+  '/owner-forgot-password': typeof OwnerForgotPasswordRoute
+  '/owner-login': typeof OwnerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/admin/login': typeof ApiAdminLoginRoute
+  '/api/admin/messages': typeof ApiAdminMessagesRouteWithChildren
+  '/api/admin/pending': typeof ApiAdminPendingRoute
+  '/api/admin/stats': typeof ApiAdminStatsRoute
+  '/api/comments/approved': typeof ApiCommentsApprovedRoute
+  '/api/owner/login': typeof ApiOwnerLoginRoute
+  '/api/owner/logout': typeof ApiOwnerLogoutRoute
+  '/api/owner/messages': typeof ApiOwnerMessagesRouteWithChildren
+  '/api/owner/migrate-credentials': typeof ApiOwnerMigrateCredentialsRoute
+  '/api/owner/reset-password': typeof ApiOwnerResetPasswordRoute
+  '/api/owner/stats': typeof ApiOwnerStatsRoute
+  '/api/admin/messages/id/approve': typeof ApiAdminMessagesChar91idChar93ApproveRoute
+  '/api/admin/messages/id/delete': typeof ApiAdminMessagesChar91idChar93DeleteRoute
+  '/api/admin/messages/id/feature': typeof ApiAdminMessagesChar91idChar93FeatureRoute
+  '/api/admin/messages/id/hide': typeof ApiAdminMessagesChar91idChar93HideRoute
+  '/api/admin/messages/id/pin': typeof ApiAdminMessagesChar91idChar93PinRoute
+  '/api/owner/messages/id/approve': typeof ApiOwnerMessagesChar91idChar93ApproveRoute
+  '/api/owner/messages/id/delete': typeof ApiOwnerMessagesChar91idChar93DeleteRoute
+  '/api/owner/messages/id/feature': typeof ApiOwnerMessagesChar91idChar93FeatureRoute
+  '/api/owner/messages/id/hide': typeof ApiOwnerMessagesChar91idChar93HideRoute
+  '/api/owner/messages/id/pin': typeof ApiOwnerMessagesChar91idChar93PinRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/owner-dashboard': typeof OwnerDashboardRoute
+  '/owner-forgot-password': typeof OwnerForgotPasswordRoute
+  '/owner-login': typeof OwnerLoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/admin/login': typeof ApiAdminLoginRoute
+  '/api/admin/messages': typeof ApiAdminMessagesRouteWithChildren
+  '/api/admin/pending': typeof ApiAdminPendingRoute
+  '/api/admin/stats': typeof ApiAdminStatsRoute
+  '/api/comments/approved': typeof ApiCommentsApprovedRoute
+  '/api/owner/login': typeof ApiOwnerLoginRoute
+  '/api/owner/logout': typeof ApiOwnerLogoutRoute
+  '/api/owner/messages': typeof ApiOwnerMessagesRouteWithChildren
+  '/api/owner/migrate-credentials': typeof ApiOwnerMigrateCredentialsRoute
+  '/api/owner/reset-password': typeof ApiOwnerResetPasswordRoute
+  '/api/owner/stats': typeof ApiOwnerStatsRoute
+  '/api/admin/messages/id/approve': typeof ApiAdminMessagesChar91idChar93ApproveRoute
+  '/api/admin/messages/id/delete': typeof ApiAdminMessagesChar91idChar93DeleteRoute
+  '/api/admin/messages/id/feature': typeof ApiAdminMessagesChar91idChar93FeatureRoute
+  '/api/admin/messages/id/hide': typeof ApiAdminMessagesChar91idChar93HideRoute
+  '/api/admin/messages/id/pin': typeof ApiAdminMessagesChar91idChar93PinRoute
+  '/api/owner/messages/id/approve': typeof ApiOwnerMessagesChar91idChar93ApproveRoute
+  '/api/owner/messages/id/delete': typeof ApiOwnerMessagesChar91idChar93DeleteRoute
+  '/api/owner/messages/id/feature': typeof ApiOwnerMessagesChar91idChar93FeatureRoute
+  '/api/owner/messages/id/hide': typeof ApiOwnerMessagesChar91idChar93HideRoute
+  '/api/owner/messages/id/pin': typeof ApiOwnerMessagesChar91idChar93PinRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sitemap.xml' | '/api/chat'
+  fullPaths:
+    | '/'
+    | '/owner-dashboard'
+    | '/owner-forgot-password'
+    | '/owner-login'
+    | '/sitemap.xml'
+    | '/admin/dashboard'
+    | '/admin/login'
+    | '/api/chat'
+    | '/api/admin/login'
+    | '/api/admin/messages'
+    | '/api/admin/pending'
+    | '/api/admin/stats'
+    | '/api/comments/approved'
+    | '/api/owner/login'
+    | '/api/owner/logout'
+    | '/api/owner/messages'
+    | '/api/owner/migrate-credentials'
+    | '/api/owner/reset-password'
+    | '/api/owner/stats'
+    | '/api/admin/messages/id/approve'
+    | '/api/admin/messages/id/delete'
+    | '/api/admin/messages/id/feature'
+    | '/api/admin/messages/id/hide'
+    | '/api/admin/messages/id/pin'
+    | '/api/owner/messages/id/approve'
+    | '/api/owner/messages/id/delete'
+    | '/api/owner/messages/id/feature'
+    | '/api/owner/messages/id/hide'
+    | '/api/owner/messages/id/pin'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sitemap.xml' | '/api/chat'
-  id: '__root__' | '/' | '/sitemap.xml' | '/api/chat'
+  to:
+    | '/'
+    | '/owner-dashboard'
+    | '/owner-forgot-password'
+    | '/owner-login'
+    | '/sitemap.xml'
+    | '/admin/dashboard'
+    | '/admin/login'
+    | '/api/chat'
+    | '/api/admin/login'
+    | '/api/admin/messages'
+    | '/api/admin/pending'
+    | '/api/admin/stats'
+    | '/api/comments/approved'
+    | '/api/owner/login'
+    | '/api/owner/logout'
+    | '/api/owner/messages'
+    | '/api/owner/migrate-credentials'
+    | '/api/owner/reset-password'
+    | '/api/owner/stats'
+    | '/api/admin/messages/id/approve'
+    | '/api/admin/messages/id/delete'
+    | '/api/admin/messages/id/feature'
+    | '/api/admin/messages/id/hide'
+    | '/api/admin/messages/id/pin'
+    | '/api/owner/messages/id/approve'
+    | '/api/owner/messages/id/delete'
+    | '/api/owner/messages/id/feature'
+    | '/api/owner/messages/id/hide'
+    | '/api/owner/messages/id/pin'
+  id:
+    | '__root__'
+    | '/'
+    | '/owner-dashboard'
+    | '/owner-forgot-password'
+    | '/owner-login'
+    | '/sitemap.xml'
+    | '/admin/dashboard'
+    | '/admin/login'
+    | '/api/chat'
+    | '/api/admin/login'
+    | '/api/admin/messages'
+    | '/api/admin/pending'
+    | '/api/admin/stats'
+    | '/api/comments/approved'
+    | '/api/owner/login'
+    | '/api/owner/logout'
+    | '/api/owner/messages'
+    | '/api/owner/migrate-credentials'
+    | '/api/owner/reset-password'
+    | '/api/owner/stats'
+    | '/api/admin/messages/id/approve'
+    | '/api/admin/messages/id/delete'
+    | '/api/admin/messages/id/feature'
+    | '/api/admin/messages/id/hide'
+    | '/api/admin/messages/id/pin'
+    | '/api/owner/messages/id/approve'
+    | '/api/owner/messages/id/delete'
+    | '/api/owner/messages/id/feature'
+    | '/api/owner/messages/id/hide'
+    | '/api/owner/messages/id/pin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  OwnerDashboardRoute: typeof OwnerDashboardRoute
+  OwnerForgotPasswordRoute: typeof OwnerForgotPasswordRoute
+  OwnerLoginRoute: typeof OwnerLoginRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiAdminLoginRoute: typeof ApiAdminLoginRoute
+  ApiAdminMessagesRoute: typeof ApiAdminMessagesRouteWithChildren
+  ApiAdminPendingRoute: typeof ApiAdminPendingRoute
+  ApiAdminStatsRoute: typeof ApiAdminStatsRoute
+  ApiCommentsApprovedRoute: typeof ApiCommentsApprovedRoute
+  ApiOwnerLoginRoute: typeof ApiOwnerLoginRoute
+  ApiOwnerLogoutRoute: typeof ApiOwnerLogoutRoute
+  ApiOwnerMessagesRoute: typeof ApiOwnerMessagesRouteWithChildren
+  ApiOwnerMigrateCredentialsRoute: typeof ApiOwnerMigrateCredentialsRoute
+  ApiOwnerResetPasswordRoute: typeof ApiOwnerResetPasswordRoute
+  ApiOwnerStatsRoute: typeof ApiOwnerStatsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -66,6 +415,27 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner-login': {
+      id: '/owner-login'
+      path: '/owner-login'
+      fullPath: '/owner-login'
+      preLoaderRoute: typeof OwnerLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner-forgot-password': {
+      id: '/owner-forgot-password'
+      path: '/owner-forgot-password'
+      fullPath: '/owner-forgot-password'
+      preLoaderRoute: typeof OwnerForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner-dashboard': {
+      id: '/owner-dashboard'
+      path: '/owner-dashboard'
+      fullPath: '/owner-dashboard'
+      preLoaderRoute: typeof OwnerDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -82,14 +452,249 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/admin/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/owner/stats': {
+      id: '/api/owner/stats'
+      path: '/api/owner/stats'
+      fullPath: '/api/owner/stats'
+      preLoaderRoute: typeof ApiOwnerStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/owner/reset-password': {
+      id: '/api/owner/reset-password'
+      path: '/api/owner/reset-password'
+      fullPath: '/api/owner/reset-password'
+      preLoaderRoute: typeof ApiOwnerResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/owner/migrate-credentials': {
+      id: '/api/owner/migrate-credentials'
+      path: '/api/owner/migrate-credentials'
+      fullPath: '/api/owner/migrate-credentials'
+      preLoaderRoute: typeof ApiOwnerMigrateCredentialsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/owner/messages': {
+      id: '/api/owner/messages'
+      path: '/api/owner/messages'
+      fullPath: '/api/owner/messages'
+      preLoaderRoute: typeof ApiOwnerMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/owner/logout': {
+      id: '/api/owner/logout'
+      path: '/api/owner/logout'
+      fullPath: '/api/owner/logout'
+      preLoaderRoute: typeof ApiOwnerLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/owner/login': {
+      id: '/api/owner/login'
+      path: '/api/owner/login'
+      fullPath: '/api/owner/login'
+      preLoaderRoute: typeof ApiOwnerLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/comments/approved': {
+      id: '/api/comments/approved'
+      path: '/api/comments/approved'
+      fullPath: '/api/comments/approved'
+      preLoaderRoute: typeof ApiCommentsApprovedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/stats': {
+      id: '/api/admin/stats'
+      path: '/api/admin/stats'
+      fullPath: '/api/admin/stats'
+      preLoaderRoute: typeof ApiAdminStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/pending': {
+      id: '/api/admin/pending'
+      path: '/api/admin/pending'
+      fullPath: '/api/admin/pending'
+      preLoaderRoute: typeof ApiAdminPendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/messages': {
+      id: '/api/admin/messages'
+      path: '/api/admin/messages'
+      fullPath: '/api/admin/messages'
+      preLoaderRoute: typeof ApiAdminMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/login': {
+      id: '/api/admin/login'
+      path: '/api/admin/login'
+      fullPath: '/api/admin/login'
+      preLoaderRoute: typeof ApiAdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/owner/messages/id/pin': {
+      id: '/api/owner/messages/id/pin'
+      path: '/id/pin'
+      fullPath: '/api/owner/messages/id/pin'
+      preLoaderRoute: typeof ApiOwnerMessagesChar91idChar93PinRouteImport
+      parentRoute: typeof ApiOwnerMessagesRoute
+    }
+    '/api/owner/messages/id/hide': {
+      id: '/api/owner/messages/id/hide'
+      path: '/id/hide'
+      fullPath: '/api/owner/messages/id/hide'
+      preLoaderRoute: typeof ApiOwnerMessagesChar91idChar93HideRouteImport
+      parentRoute: typeof ApiOwnerMessagesRoute
+    }
+    '/api/owner/messages/id/feature': {
+      id: '/api/owner/messages/id/feature'
+      path: '/id/feature'
+      fullPath: '/api/owner/messages/id/feature'
+      preLoaderRoute: typeof ApiOwnerMessagesChar91idChar93FeatureRouteImport
+      parentRoute: typeof ApiOwnerMessagesRoute
+    }
+    '/api/owner/messages/id/delete': {
+      id: '/api/owner/messages/id/delete'
+      path: '/id/delete'
+      fullPath: '/api/owner/messages/id/delete'
+      preLoaderRoute: typeof ApiOwnerMessagesChar91idChar93DeleteRouteImport
+      parentRoute: typeof ApiOwnerMessagesRoute
+    }
+    '/api/owner/messages/id/approve': {
+      id: '/api/owner/messages/id/approve'
+      path: '/id/approve'
+      fullPath: '/api/owner/messages/id/approve'
+      preLoaderRoute: typeof ApiOwnerMessagesChar91idChar93ApproveRouteImport
+      parentRoute: typeof ApiOwnerMessagesRoute
+    }
+    '/api/admin/messages/id/pin': {
+      id: '/api/admin/messages/id/pin'
+      path: '/id/pin'
+      fullPath: '/api/admin/messages/id/pin'
+      preLoaderRoute: typeof ApiAdminMessagesChar91idChar93PinRouteImport
+      parentRoute: typeof ApiAdminMessagesRoute
+    }
+    '/api/admin/messages/id/hide': {
+      id: '/api/admin/messages/id/hide'
+      path: '/id/hide'
+      fullPath: '/api/admin/messages/id/hide'
+      preLoaderRoute: typeof ApiAdminMessagesChar91idChar93HideRouteImport
+      parentRoute: typeof ApiAdminMessagesRoute
+    }
+    '/api/admin/messages/id/feature': {
+      id: '/api/admin/messages/id/feature'
+      path: '/id/feature'
+      fullPath: '/api/admin/messages/id/feature'
+      preLoaderRoute: typeof ApiAdminMessagesChar91idChar93FeatureRouteImport
+      parentRoute: typeof ApiAdminMessagesRoute
+    }
+    '/api/admin/messages/id/delete': {
+      id: '/api/admin/messages/id/delete'
+      path: '/id/delete'
+      fullPath: '/api/admin/messages/id/delete'
+      preLoaderRoute: typeof ApiAdminMessagesChar91idChar93DeleteRouteImport
+      parentRoute: typeof ApiAdminMessagesRoute
+    }
+    '/api/admin/messages/id/approve': {
+      id: '/api/admin/messages/id/approve'
+      path: '/id/approve'
+      fullPath: '/api/admin/messages/id/approve'
+      preLoaderRoute: typeof ApiAdminMessagesChar91idChar93ApproveRouteImport
+      parentRoute: typeof ApiAdminMessagesRoute
+    }
   }
 }
 
+interface ApiAdminMessagesRouteChildren {
+  ApiAdminMessagesChar91idChar93ApproveRoute: typeof ApiAdminMessagesChar91idChar93ApproveRoute
+  ApiAdminMessagesChar91idChar93DeleteRoute: typeof ApiAdminMessagesChar91idChar93DeleteRoute
+  ApiAdminMessagesChar91idChar93FeatureRoute: typeof ApiAdminMessagesChar91idChar93FeatureRoute
+  ApiAdminMessagesChar91idChar93HideRoute: typeof ApiAdminMessagesChar91idChar93HideRoute
+  ApiAdminMessagesChar91idChar93PinRoute: typeof ApiAdminMessagesChar91idChar93PinRoute
+}
+
+const ApiAdminMessagesRouteChildren: ApiAdminMessagesRouteChildren = {
+  ApiAdminMessagesChar91idChar93ApproveRoute:
+    ApiAdminMessagesChar91idChar93ApproveRoute,
+  ApiAdminMessagesChar91idChar93DeleteRoute:
+    ApiAdminMessagesChar91idChar93DeleteRoute,
+  ApiAdminMessagesChar91idChar93FeatureRoute:
+    ApiAdminMessagesChar91idChar93FeatureRoute,
+  ApiAdminMessagesChar91idChar93HideRoute:
+    ApiAdminMessagesChar91idChar93HideRoute,
+  ApiAdminMessagesChar91idChar93PinRoute:
+    ApiAdminMessagesChar91idChar93PinRoute,
+}
+
+const ApiAdminMessagesRouteWithChildren =
+  ApiAdminMessagesRoute._addFileChildren(ApiAdminMessagesRouteChildren)
+
+interface ApiOwnerMessagesRouteChildren {
+  ApiOwnerMessagesChar91idChar93ApproveRoute: typeof ApiOwnerMessagesChar91idChar93ApproveRoute
+  ApiOwnerMessagesChar91idChar93DeleteRoute: typeof ApiOwnerMessagesChar91idChar93DeleteRoute
+  ApiOwnerMessagesChar91idChar93FeatureRoute: typeof ApiOwnerMessagesChar91idChar93FeatureRoute
+  ApiOwnerMessagesChar91idChar93HideRoute: typeof ApiOwnerMessagesChar91idChar93HideRoute
+  ApiOwnerMessagesChar91idChar93PinRoute: typeof ApiOwnerMessagesChar91idChar93PinRoute
+}
+
+const ApiOwnerMessagesRouteChildren: ApiOwnerMessagesRouteChildren = {
+  ApiOwnerMessagesChar91idChar93ApproveRoute:
+    ApiOwnerMessagesChar91idChar93ApproveRoute,
+  ApiOwnerMessagesChar91idChar93DeleteRoute:
+    ApiOwnerMessagesChar91idChar93DeleteRoute,
+  ApiOwnerMessagesChar91idChar93FeatureRoute:
+    ApiOwnerMessagesChar91idChar93FeatureRoute,
+  ApiOwnerMessagesChar91idChar93HideRoute:
+    ApiOwnerMessagesChar91idChar93HideRoute,
+  ApiOwnerMessagesChar91idChar93PinRoute:
+    ApiOwnerMessagesChar91idChar93PinRoute,
+}
+
+const ApiOwnerMessagesRouteWithChildren =
+  ApiOwnerMessagesRoute._addFileChildren(ApiOwnerMessagesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  OwnerDashboardRoute: OwnerDashboardRoute,
+  OwnerForgotPasswordRoute: OwnerForgotPasswordRoute,
+  OwnerLoginRoute: OwnerLoginRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminLoginRoute: AdminLoginRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiAdminLoginRoute: ApiAdminLoginRoute,
+  ApiAdminMessagesRoute: ApiAdminMessagesRouteWithChildren,
+  ApiAdminPendingRoute: ApiAdminPendingRoute,
+  ApiAdminStatsRoute: ApiAdminStatsRoute,
+  ApiCommentsApprovedRoute: ApiCommentsApprovedRoute,
+  ApiOwnerLoginRoute: ApiOwnerLoginRoute,
+  ApiOwnerLogoutRoute: ApiOwnerLogoutRoute,
+  ApiOwnerMessagesRoute: ApiOwnerMessagesRouteWithChildren,
+  ApiOwnerMigrateCredentialsRoute: ApiOwnerMigrateCredentialsRoute,
+  ApiOwnerResetPasswordRoute: ApiOwnerResetPasswordRoute,
+  ApiOwnerStatsRoute: ApiOwnerStatsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
