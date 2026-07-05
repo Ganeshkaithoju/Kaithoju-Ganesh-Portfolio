@@ -97,6 +97,7 @@ const TIMELINE = [
   { year: "2022", title: "Started B.Tech (ECE)", desc: "Began Electronics & Communication Engineering at Narasimha Reddy Engineering College.", icon: Code2 },
   { year: "2025", title: "Python Intern @ YBI Foundation", desc: "Built projects like Tic-Tac-Toe and Rock-Paper-Scissors while learning core Python.", icon: Rocket },
   { year: "2025", title: "Summer Intern @ BHEL", desc: "Team member on a thermal power systems project — analysed PLC and CNC processes at BHEL Hyderabad.", icon: Briefcase },
+  { year: "2026", title: "Completed B.Tech (ECE)", desc: "Graduated from Narasimha Reddy Engineering College with CGPA 8.42/10.", icon: GraduationCap },
   { year: "2026", title: "Intern @ Lumen Technologies", desc: "Intern on the Backup & Restore team at Lumen Technologies India — Bengaluru.", icon: HardDrive },
 ];
 
@@ -207,7 +208,7 @@ function SectionHeading({ eyebrow, title, subtitle, id }: { eyebrow: string; tit
 function PortfolioPage() {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 20, restDelta: 0.001 });
 
@@ -224,8 +225,19 @@ function PortfolioPage() {
   }, [cx, cy]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storedTheme = window.localStorage.getItem("theme");
+    if (storedTheme) {
+      setDark(storedTheme === "dark");
+    }
+  }, []);
+
+  useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.classList.toggle("dark", dark);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("theme", dark ? "dark" : "light");
+    }
   }, [dark]);
 
   return (
@@ -822,11 +834,14 @@ const contactSchema = z.object({
 function Contact() {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof z.infer<typeof contactSchema>, string>>>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrors({});
-    const fd = new FormData(e.currentTarget);
+    const formElement = e.currentTarget;
+    const fd = new FormData(formElement);
     const payload = {
       name: String(fd.get("name") ?? ""),
       email: String(fd.get("email") ?? ""),
@@ -856,62 +871,135 @@ function Contact() {
         const whatsappResult = await sendToWhatsApp(parsed.data, gasUrl);
         if (!whatsappResult.success) {
           console.warn("WhatsApp notification failed:", whatsappResult.error);
-          // Don't fail the overall submission - message is still in Supabase
-          toast.warning("Message saved, but WhatsApp notification couldn't be sent.");
-        } else {
-          toast.success("Message sent — I'll get back to you soon! 📲");
         }
-      } else {
-        toast.success("Message sent — I'll get back to you soon!");
       }
-      
-      (e.currentTarget as HTMLFormElement).reset();
+
+      // Clear form and errors
+      setErrors({});
+      formElement.reset();
+      setShowSuccessModal(true);
     } catch (err) {
       console.error("Contact submission failed", err);
-      toast.error("Couldn't send your message. Please email me directly.");
+      setShowErrorModal(true);
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <section id="contact" aria-labelledby="contact-title" className="relative px-4 py-24 sm:px-6">
-      <div className="mx-auto max-w-6xl">
-        <SectionHeading id="contact-title" eyebrow="Contact" title={<>Let's build <span className="text-gradient">something great</span></>} subtitle="Have a project, a role, or just want to say hi? My inbox is open." />
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
-          <div className="space-y-4">
-            {[
-              { icon: Mail, label: "Email", value: EMAIL, href: `mailto:${EMAIL}` },
-              { icon: Phone, label: "Phone", value: PHONE_DISPLAY, href: `tel:${PHONE_TEL}` },
-              { icon: MapPin, label: "Location", value: "Hyderabad, Telangana, India", href: "https://www.google.com/maps/place/Hyderabad" },
-              { icon: Linkedin, label: "LinkedIn", value: "/in/ganesh-kaithoju", href: LINKEDIN },
-              { icon: Download, label: "Resume", value: "Download PDF", href: RESUME_URL },
-            ].map((c) => (
-              <a key={c.label} href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel={c.href.startsWith("http") ? "noreferrer" : undefined} className="card-premium group flex items-center gap-4 p-5 transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
-                <div aria-hidden="true" className="grid h-11 w-11 place-items-center rounded-xl glass"><c.icon className="h-5 w-5 text-primary" /></div>
-                <div>
-                  <div className="text-xs uppercase tracking-widest text-muted-foreground">{c.label}</div>
-                  <div className="font-medium">{c.value}</div>
-                </div>
-                <ArrowUpRight aria-hidden="true" className="ml-auto h-4 w-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </a>
-            ))}
-          </div>
-          <motion.form initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} onSubmit={onSubmit} noValidate className="card-premium space-y-4 p-8" aria-label="Contact form">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Name" name="name" placeholder="Your name" required maxLength={100} error={errors.name} />
-              <Field label="Email" name="email" type="email" placeholder="you@example.com" required maxLength={255} error={errors.email} />
+    <>
+      <section id="contact" aria-labelledby="contact-title" className="relative px-4 py-24 sm:px-6">
+        <div className="mx-auto max-w-6xl">
+          <SectionHeading id="contact-title" eyebrow="Contact" title={<>Let's build <span className="text-gradient">something great</span></>} subtitle="Have a project, a role, or just want to say hi? My inbox is open." />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
+            <div className="space-y-4">
+              {[
+                { icon: Mail, label: "Email", value: EMAIL, href: `mailto:${EMAIL}` },
+                { icon: Phone, label: "Phone", value: PHONE_DISPLAY, href: `tel:${PHONE_TEL}` },
+                { icon: MapPin, label: "Location", value: "Hyderabad, Telangana, India", href: "https://www.google.com/maps/place/Hyderabad" },
+                { icon: Linkedin, label: "LinkedIn", value: "/in/ganesh-kaithoju", href: LINKEDIN },
+                { icon: Download, label: "Resume", value: "Download PDF", href: RESUME_URL },
+              ].map((c) => (
+                <a key={c.label} href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel={c.href.startsWith("http") ? "noreferrer" : undefined} className="card-premium group flex items-center gap-4 p-5 transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+                  <div aria-hidden="true" className="grid h-11 w-11 place-items-center rounded-xl glass"><c.icon className="h-5 w-5 text-primary" /></div>
+                  <div>
+                    <div className="text-xs uppercase tracking-widest text-muted-foreground">{c.label}</div>
+                    <div className="font-medium">{c.value}</div>
+                  </div>
+                  <ArrowUpRight aria-hidden="true" className="ml-auto h-4 w-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </a>
+              ))}
             </div>
-            <Field label="Subject" name="subject" placeholder="What's this about?" required maxLength={200} error={errors.subject} />
-            <Field label="Message" name="message" placeholder="Tell me a bit about your project…" textarea required maxLength={2000} error={errors.message} />
-            <button type="submit" disabled={submitting} className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-all hover:shadow-[0_0_40px_oklch(0.85_0.18_165/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-60 disabled:cursor-not-allowed">
-              {submitting ? "Sending…" : (<>Send message <Send aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-1" /></>)}
-            </button>
-            <p className="text-xs text-muted-foreground">Your message is stored securely and only I can read it.</p>
-          </motion.form>
+            <motion.form initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} onSubmit={onSubmit} noValidate className="card-premium space-y-4 p-8" aria-label="Contact form">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Name" name="name" placeholder="Your name" required maxLength={100} error={errors.name} />
+                <Field label="Email" name="email" type="email" placeholder="you@example.com" required maxLength={255} error={errors.email} />
+              </div>
+              <Field label="Subject" name="subject" placeholder="What's this about?" required maxLength={200} error={errors.subject} />
+              <Field label="Message" name="message" placeholder="Tell me a bit about your project…" textarea required maxLength={2000} error={errors.message} />
+              <button type="submit" disabled={submitting} className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-all hover:shadow-[0_0_40px_oklch(0.85_0.18_165/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-60 disabled:cursor-not-allowed">
+                {submitting ? "Sending…" : (<>Send message <Send aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-1" /></>)}
+              </button>
+              <p className="text-xs text-muted-foreground">Your message is stored securely and only I can read it.</p>
+            </motion.form>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="card-premium relative w-full max-w-md p-8 text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              aria-hidden="true"
+              className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20"
+            >
+              <svg className="h-8 w-8 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </motion.div>
+
+            <h3 className="mb-3 font-display text-2xl font-bold">Thank You!</h3>
+            <p className="mb-8 text-base leading-relaxed text-muted-foreground">
+              Thank you for sending message. I appreciate your time and efforts. I have successfully received your message.
+            </p>
+
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3 font-medium text-primary-foreground transition-all hover:shadow-[0_0_40px_oklch(0.85_0.18_165/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+            >
+              Close
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="card-premium relative w-full max-w-md p-8 text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              aria-hidden="true"
+              className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20"
+            >
+              <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </motion.div>
+
+            <h3 className="mb-3 font-display text-2xl font-bold">Oops!</h3>
+            <p className="mb-8 text-base leading-relaxed text-muted-foreground">
+              There is a failure occurred while sharing your message, please try after some time.
+            </p>
+
+            <button
+              onClick={() => setShowErrorModal(false)}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3 font-medium text-primary-foreground transition-all hover:shadow-[0_0_40px_oklch(0.85_0.18_165/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+            >
+              Close
+            </button>
+          </motion.div>
+        </div>
+      )}
+    </>
   );
 }
 
