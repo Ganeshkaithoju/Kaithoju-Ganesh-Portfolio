@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getOwnerSessionFromRequest, isSessionValid } from "@/lib/owner-auth.server";
 
-export const Route = createFileRoute("/api/owner/messages/id/feature")({
+export const Route = createFileRoute("/api/owner/messages/$id/delete")({
   server: {
     handlers: {
       POST: async ({ request, params }) => {
@@ -15,22 +15,9 @@ export const Route = createFileRoute("/api/owner/messages/id/feature")({
         }
 
         try {
-          const { data: message, error: fetchError } = await supabaseAdmin
-            .from("contact_messages")
-            .select("is_featured")
-            .eq("id", params.id)
-            .single();
-
-          if (fetchError) {
-            return new Response(JSON.stringify({ error: fetchError.message }), {
-              status: 500,
-              headers: { "Content-Type": "application/json" },
-            });
-          }
-
           const { error } = await supabaseAdmin
             .from("contact_messages")
-            .update({ is_featured: !message.is_featured })
+            .delete()
             .eq("id", params.id);
 
           if (error) {
@@ -40,13 +27,13 @@ export const Route = createFileRoute("/api/owner/messages/id/feature")({
             });
           }
 
-          return new Response(JSON.stringify({ success: true, is_featured: !message.is_featured }), {
+          return new Response(JSON.stringify({ success: true }), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         } catch (err) {
-          console.error("Error featuring message:", err);
-          return new Response(JSON.stringify({ error: "Failed to feature message" }), {
+          console.error("Error deleting message:", err);
+          return new Response(JSON.stringify({ error: "Failed to delete message" }), {
             status: 500,
             headers: { "Content-Type": "application/json" },
           });

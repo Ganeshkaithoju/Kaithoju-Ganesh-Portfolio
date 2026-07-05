@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { getOwnerSessionFromRequest, isSessionValid } from "@/lib/owner-auth.server";
 
-export const Route = createFileRoute("/api/owner/messages/id/pin")({
+export const Route = createFileRoute("/api/owner/messages/$id/feature")({
   server: {
     handlers: {
       POST: async ({ request, params }) => {
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/api/owner/messages/id/pin")({
         try {
           const { data: message, error: fetchError } = await supabaseAdmin
             .from("contact_messages")
-            .select("is_pinned")
+            .select("is_featured")
             .eq("id", params.id)
             .single();
 
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/owner/messages/id/pin")({
 
           const { error } = await supabaseAdmin
             .from("contact_messages")
-            .update({ is_pinned: !message.is_pinned })
+            .update({ is_featured: !message.is_featured })
             .eq("id", params.id);
 
           if (error) {
@@ -40,13 +40,13 @@ export const Route = createFileRoute("/api/owner/messages/id/pin")({
             });
           }
 
-          return new Response(JSON.stringify({ success: true, is_pinned: !message.is_pinned }), {
+          return new Response(JSON.stringify({ success: true, is_featured: !message.is_featured }), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         } catch (err) {
-          console.error("Error pinning message:", err);
-          return new Response(JSON.stringify({ error: "Failed to pin message" }), {
+          console.error("Error featuring message:", err);
+          return new Response(JSON.stringify({ error: "Failed to feature message" }), {
             status: 500,
             headers: { "Content-Type": "application/json" },
           });
