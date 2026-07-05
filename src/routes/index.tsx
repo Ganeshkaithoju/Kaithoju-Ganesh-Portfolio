@@ -14,8 +14,8 @@ import { PublicComments } from "@/components/PublicComments";
 export const Route = createFileRoute("/")({ component: PortfolioPage });
 
 /* ============================================================
-   DATA (from resume)
-   ============================================================ */
+  DATA (from resume)
+  ============================================================ */
 const RESUME_URL = resumeAsset.url;
 const EMAIL = "ganeshkaithoju4685@gmail.com";
 const PHONE_DISPLAY = "+91 93923 79339";
@@ -140,7 +140,7 @@ const CERTIFICATIONS = [
 const MARQUEE = ["Python", "Java", "React", "Spring Boot", "MySQL", "HTML", "CSS", "JavaScript", "Arduino", "NodeMCU", "Embedded C", "Git", "UiPath", "REST APIs", "OOP"];
 
 /* ============================================================
-   HOOKS / PRIMITIVES
+  HOOKS / PRIMITIVES
    ============================================================ */
 function useMagnetic(strength = 0.35) {
   const ref = useRef<HTMLElement | null>(null);
@@ -203,7 +203,7 @@ function SectionHeading({ eyebrow, title, subtitle, id }: { eyebrow: string; tit
 }
 
 /* ============================================================
-   PAGE
+  PAGE
    ============================================================ */
 function PortfolioPage() {
   const [loading, setLoading] = useState(true);
@@ -269,9 +269,9 @@ function PortfolioPage() {
       {/* Ambient background */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
-        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] animate-blob rounded-full opacity-30" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.5), transparent 60%)" }} />
-        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] animate-blob rounded-full opacity-25" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.5), transparent 60%)", animationDelay: "4s" }} />
-        <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] animate-blob rounded-full opacity-20" style={{ background: "radial-gradient(circle, oklch(0.7 0.18 220 / 0.5), transparent 60%)", animationDelay: "8s" }} />
+        <div className="absolute -top-40 -left-40 h-125 w-125 animate-blob rounded-full opacity-30" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.5), transparent 60%)" }} />
+        <div aria-hidden="true" className="absolute top-1/3 -right-40 h-150 w-150 animate-blob rounded-full opacity-25" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.5), transparent 60%)", animationDelay: "4s" }} />
+        <div className="absolute bottom-0 left-1/3 h-100 w-100 animate-blob rounded-full opacity-20" style={{ background: "radial-gradient(circle, oklch(0.7 0.18 220 / 0.5), transparent 60%)", animationDelay: "8s" }} />
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(oklch(1 0 0) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
       </div>
 
@@ -299,7 +299,7 @@ function PortfolioPage() {
 }
 
 /* ============================================================
-   NAVBAR
+  NAVBAR
    ============================================================ */
 function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setNavOpen: (v: boolean) => void; dark: boolean; setDark: (v: boolean) => void }) {
   const [scrolled, setScrolled] = useState(false);
@@ -325,7 +325,8 @@ function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setN
             {dark ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
           </button>
           <a href="#contact" className="hidden rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 md:inline-flex">Let's talk</a>
-          <button type="button" aria-label={navOpen ? "Close menu" : "Open menu"} aria-expanded={navOpen} aria-controls="mobile-nav" className="grid h-11 w-11 place-items-center rounded-lg glass md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60" onClick={() => setNavOpen(!navOpen)}>
+          <button type="button" aria-label={navOpen ? "Close menu" : "Open menu"} aria-expanded={navOpen ? "true" : "false"}
+            aria-controls="mobile-nav" className="grid h-11 w-11 place-items-center rounded-lg glass md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60" onClick={() => setNavOpen(!navOpen)}>
             {navOpen ? <X className="h-4 w-4" aria-hidden="true" /> : <Menu className="h-4 w-4" aria-hidden="true" />}
           </button>
         </div>
@@ -346,7 +347,7 @@ function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setN
 }
 
 /* ============================================================
-   HERO
+  HERO
    ============================================================ */
 function TypingText({ words }: { words: string[] }) {
   const [i, setI] = useState(0);
@@ -716,7 +717,7 @@ function Projects() {
 }
 
 /* ============================================================
-   TIMELINE
+    TIMELINE
    ============================================================ */
 function Timeline() {
   return (
@@ -750,7 +751,7 @@ function Timeline() {
 }
 
 /* ============================================================
-   SERVICES
+    SERVICES
    ============================================================ */
 function Services() {
   return (
@@ -774,7 +775,7 @@ function Services() {
 }
 
 /* ============================================================
-   WHY HIRE
+    WHY HIRE
    ============================================================ */
 function WhyHire() {
   return (
@@ -796,7 +797,7 @@ function WhyHire() {
 }
 
 /* ============================================================
-   CERTIFICATIONS
+    CERTIFICATIONS
    ============================================================ */
 function Certifications() {
   return (
@@ -822,7 +823,7 @@ function Certifications() {
 }
 
 /* ============================================================
-   CONTACT (wired to Lovable Cloud)
+    CONTACT (wired to Lovable Cloud)
    ============================================================ */
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name too long"),
@@ -1006,7 +1007,7 @@ function Contact() {
 function Field({ label, name, type = "text", placeholder, required, textarea, maxLength, error }: { label: string; name: string; type?: string; placeholder?: string; required?: boolean; textarea?: boolean; maxLength?: number; error?: string }) {
   const id = `field-${name}`;
   const errId = `${id}-error`;
-  const cls = `w-full rounded-xl border ${error ? "border-red-400/70" : "border-white/10"} bg-white/[0.03] px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition`;
+  const cls = `w-full rounded-xl border ${error ? "border-red-400/70" : "border-white/10"} bg-white/3 px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition`;
   return (
     <div>
       <label htmlFor={id} className="mb-1.5 block text-xs uppercase tracking-widest text-muted-foreground">
@@ -1023,7 +1024,7 @@ function Field({ label, name, type = "text", placeholder, required, textarea, ma
 }
 
 /* ============================================================
-   FOOTER
+    FOOTER
    ============================================================ */
 function Footer() {
   return (

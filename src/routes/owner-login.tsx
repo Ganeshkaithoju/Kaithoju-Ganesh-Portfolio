@@ -53,8 +53,8 @@ function OwnerLogin() {
       {/* Background */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
-        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] animate-blob rounded-full opacity-30" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.5), transparent 60%)" }} />
-        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] animate-blob rounded-full opacity-25" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.5), transparent 60%)", animationDelay: "4s" }} />
+        <div className="absolute -top-40 -left-40 h-125 w-125 animate-blob rounded-full opacity-30" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.5), transparent 60%)" }} />
+        <div className="absolute top-1/3 -right-40 h-150 w-150 animate-blob rounded-full opacity-25" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.5), transparent 60%)", animationDelay: "4s" }} />
       </div>
 
       {/* Login Card */}
@@ -96,7 +96,7 @@ function OwnerLogin() {
                   placeholder="owner@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 pl-12 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+                  className="w-full rounded-xl border border-white/10 bg-white/3 px-4 py-3 pl-12 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
                   required
                 />
               </div>
@@ -115,7 +115,7 @@ function OwnerLogin() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 pl-12 pr-10 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+                  className="w-full rounded-xl border border-white/10 bg-white/3 px-4 py-3 pl-12 pr-10 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
                   required
                 />
                 <button
@@ -160,7 +160,7 @@ function OwnerLogin() {
           </div>
 
           {/* Info */}
-          <div className="mt-6 rounded-lg border border-white/10 bg-white/[0.03] p-4 text-xs text-muted-foreground">
+          <div className="mt-6 rounded-lg border border-white/10 bg-white/3 p-4 text-xs text-muted-foreground">
             <p className="font-medium text-foreground mb-2">Credentials:</p>
             <p>Email: from environment variable</p>
             <p className="mt-1">Password: from environment variable</p>

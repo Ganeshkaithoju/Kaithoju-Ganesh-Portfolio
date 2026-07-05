@@ -187,7 +187,7 @@ function OwnerDashboard() {
                 setSearch(e.target.value);
                 setPage(0);
               }}
-              className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 pl-12 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+              className="w-full rounded-xl border border-white/10 bg-white/3 px-4 py-3 pl-12 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
             />
           </div>
 
