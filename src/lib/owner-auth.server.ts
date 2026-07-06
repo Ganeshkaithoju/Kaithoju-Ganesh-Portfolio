@@ -1,17 +1,35 @@
 /**
  * Owner Authentication (Database-Based)
- * 
- * Authentication now uses database for stored credentials.
- * Passwords are hashed with bcrypt for security.
- * Session stored in server-side cookies.
+ *
+ * Session cookies are HMAC-signed to prevent forgery.
  */
 
 import bcrypt from "bcryptjs";
+import { createHmac, timingSafeEqual } from "crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export interface OwnerSession {
   email: string;
   authenticatedAt: number;
+}
+
+function getSecret(): string {
+  const secret = process.env.OWNER_SESSION_SECRET;
+  if (!secret || secret.length < 16) {
+    throw new Error("OWNER_SESSION_SECRET is not configured");
+  }
+  return secret;
+}
+
+function sign(payload: string): string {
+  return createHmac("sha256", getSecret()).update(payload).digest("base64url");
+}
+
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
 }
 
 /**
@@ -22,7 +40,6 @@ export async function verifyOwnerCredentials(
   password: string
 ): Promise<boolean> {
   try {
-    // Query database for admin credentials
     const { data, error } = await supabaseAdmin
       .from("admin_credentials")
       .select("password_hash")
@@ -34,9 +51,7 @@ export async function verifyOwnerCredentials(
       return false;
     }
 
-    // Compare password with stored hash
-    const isPasswordValid = await bcrypt.compare(password, data.password_hash);
-    return isPasswordValid;
+    return await bcrypt.compare(password, data.password_hash);
   } catch (err) {
     console.error("Error verifying credentials:", err);
     return false;
@@ -44,7 +59,7 @@ export async function verifyOwnerCredentials(
 }
 
 /**
- * Create owner session cookie
+ * Create signed owner session cookie
  */
 export function createOwnerSessionCookie(email: string): string {
   const session: OwnerSession = {
@@ -52,24 +67,23 @@ export function createOwnerSessionCookie(email: string): string {
     authenticatedAt: Date.now(),
   };
 
-  // Encode session as base64
-  const sessionData = Buffer.from(JSON.stringify(session)).toString("base64");
+  const payload = Buffer.from(JSON.stringify(session)).toString("base64url");
+  const signature = sign(payload);
+  const value = `${payload}.${signature}`;
 
-  // Return Set-Cookie header
-  // 7 days expiry
   const maxAge = 7 * 24 * 60 * 60;
-  return `owner_session=${sessionData}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}`;
+  return `owner_session=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`;
 }
 
 /**
  * Clear owner session cookie
  */
 export function clearOwnerSessionCookie(): string {
-  return "owner_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0";
+  return "owner_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0";
 }
 
 /**
- * Get owner session from request
+ * Get owner session from request (verifies HMAC signature)
  */
 export function getOwnerSessionFromRequest(request: Request): OwnerSession | null {
   const cookieHeader = request.headers.get("cookie");
@@ -77,15 +91,25 @@ export function getOwnerSessionFromRequest(request: Request): OwnerSession | nul
 
   try {
     const cookies = cookieHeader.split(";").reduce((acc: Record<string, string>, cookie) => {
-      const [key, value] = cookie.trim().split("=");
-      if (key && value) acc[key] = decodeURIComponent(value);
+      const [key, ...rest] = cookie.trim().split("=");
+      if (key && rest.length > 0) acc[key] = decodeURIComponent(rest.join("="));
       return acc;
     }, {});
 
-    const sessionData = cookies.owner_session;
-    if (!sessionData) return null;
+    const raw = cookies.owner_session;
+    if (!raw) return null;
 
-    const session = JSON.parse(Buffer.from(sessionData, "base64").toString("utf-8")) as OwnerSession;
+    const idx = raw.lastIndexOf(".");
+    if (idx <= 0) return null;
+
+    const payload = raw.slice(0, idx);
+    const signature = raw.slice(idx + 1);
+    const expected = sign(payload);
+    if (!safeEqual(signature, expected)) return null;
+
+    const session = JSON.parse(
+      Buffer.from(payload, "base64url").toString("utf-8")
+    ) as OwnerSession;
     return session;
   } catch {
     return null;
@@ -98,8 +122,8 @@ export function getOwnerSessionFromRequest(request: Request): OwnerSession | nul
 export function isSessionValid(session: OwnerSession | null): boolean {
   if (!session) return false;
 
-  const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+  const maxAge = 7 * 24 * 60 * 60 * 1000;
   const age = Date.now() - session.authenticatedAt;
 
-  return age < maxAge;
+  return age >= 0 && age < maxAge;
 }
