@@ -19,7 +19,6 @@ import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as ApiOwnerStatsRouteImport } from './routes/api/owner/stats'
 import { Route as ApiOwnerResetPasswordRouteImport } from './routes/api/owner/reset-password'
-import { Route as ApiOwnerMigrateCredentialsRouteImport } from './routes/api/owner/migrate-credentials'
 import { Route as ApiOwnerMessagesRouteImport } from './routes/api/owner/messages'
 import { Route as ApiOwnerLogoutRouteImport } from './routes/api/owner/logout'
 import { Route as ApiOwnerLoginRouteImport } from './routes/api/owner/login'
@@ -89,12 +88,6 @@ const ApiOwnerResetPasswordRoute = ApiOwnerResetPasswordRouteImport.update({
   path: '/api/owner/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiOwnerMigrateCredentialsRoute =
-  ApiOwnerMigrateCredentialsRouteImport.update({
-    id: '/api/owner/migrate-credentials',
-    path: '/api/owner/migrate-credentials',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiOwnerMessagesRoute = ApiOwnerMessagesRouteImport.update({
   id: '/api/owner/messages',
   path: '/api/owner/messages',
@@ -211,7 +204,6 @@ export interface FileRoutesByFullPath {
   '/api/owner/login': typeof ApiOwnerLoginRoute
   '/api/owner/logout': typeof ApiOwnerLogoutRoute
   '/api/owner/messages': typeof ApiOwnerMessagesRouteWithChildren
-  '/api/owner/migrate-credentials': typeof ApiOwnerMigrateCredentialsRoute
   '/api/owner/reset-password': typeof ApiOwnerResetPasswordRoute
   '/api/owner/stats': typeof ApiOwnerStatsRoute
   '/api/admin/messages/id/approve': typeof ApiAdminMessagesChar91idChar93ApproveRoute
@@ -242,7 +234,6 @@ export interface FileRoutesByTo {
   '/api/owner/login': typeof ApiOwnerLoginRoute
   '/api/owner/logout': typeof ApiOwnerLogoutRoute
   '/api/owner/messages': typeof ApiOwnerMessagesRouteWithChildren
-  '/api/owner/migrate-credentials': typeof ApiOwnerMigrateCredentialsRoute
   '/api/owner/reset-password': typeof ApiOwnerResetPasswordRoute
   '/api/owner/stats': typeof ApiOwnerStatsRoute
   '/api/admin/messages/id/approve': typeof ApiAdminMessagesChar91idChar93ApproveRoute
@@ -274,7 +265,6 @@ export interface FileRoutesById {
   '/api/owner/login': typeof ApiOwnerLoginRoute
   '/api/owner/logout': typeof ApiOwnerLogoutRoute
   '/api/owner/messages': typeof ApiOwnerMessagesRouteWithChildren
-  '/api/owner/migrate-credentials': typeof ApiOwnerMigrateCredentialsRoute
   '/api/owner/reset-password': typeof ApiOwnerResetPasswordRoute
   '/api/owner/stats': typeof ApiOwnerStatsRoute
   '/api/admin/messages/id/approve': typeof ApiAdminMessagesChar91idChar93ApproveRoute
@@ -307,7 +297,6 @@ export interface FileRouteTypes {
     | '/api/owner/login'
     | '/api/owner/logout'
     | '/api/owner/messages'
-    | '/api/owner/migrate-credentials'
     | '/api/owner/reset-password'
     | '/api/owner/stats'
     | '/api/admin/messages/id/approve'
@@ -338,7 +327,6 @@ export interface FileRouteTypes {
     | '/api/owner/login'
     | '/api/owner/logout'
     | '/api/owner/messages'
-    | '/api/owner/migrate-credentials'
     | '/api/owner/reset-password'
     | '/api/owner/stats'
     | '/api/admin/messages/id/approve'
@@ -369,7 +357,6 @@ export interface FileRouteTypes {
     | '/api/owner/login'
     | '/api/owner/logout'
     | '/api/owner/messages'
-    | '/api/owner/migrate-credentials'
     | '/api/owner/reset-password'
     | '/api/owner/stats'
     | '/api/admin/messages/id/approve'
@@ -401,7 +388,6 @@ export interface RootRouteChildren {
   ApiOwnerLoginRoute: typeof ApiOwnerLoginRoute
   ApiOwnerLogoutRoute: typeof ApiOwnerLogoutRoute
   ApiOwnerMessagesRoute: typeof ApiOwnerMessagesRouteWithChildren
-  ApiOwnerMigrateCredentialsRoute: typeof ApiOwnerMigrateCredentialsRoute
   ApiOwnerResetPasswordRoute: typeof ApiOwnerResetPasswordRoute
   ApiOwnerStatsRoute: typeof ApiOwnerStatsRoute
 }
@@ -476,13 +462,6 @@ declare module '@tanstack/react-router' {
       path: '/api/owner/reset-password'
       fullPath: '/api/owner/reset-password'
       preLoaderRoute: typeof ApiOwnerResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/owner/migrate-credentials': {
-      id: '/api/owner/migrate-credentials'
-      path: '/api/owner/migrate-credentials'
-      fullPath: '/api/owner/migrate-credentials'
-      preLoaderRoute: typeof ApiOwnerMigrateCredentialsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/owner/messages': {
@@ -674,20 +653,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOwnerLoginRoute: ApiOwnerLoginRoute,
   ApiOwnerLogoutRoute: ApiOwnerLogoutRoute,
   ApiOwnerMessagesRoute: ApiOwnerMessagesRouteWithChildren,
-  ApiOwnerMigrateCredentialsRoute: ApiOwnerMigrateCredentialsRoute,
   ApiOwnerResetPasswordRoute: ApiOwnerResetPasswordRoute,
   ApiOwnerStatsRoute: ApiOwnerStatsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
