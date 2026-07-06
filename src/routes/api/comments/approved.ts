@@ -6,13 +6,7 @@ export const Route = createFileRoute("/api/comments/approved")({
     handlers: {
       GET: async () => {
         try {
-          const { data, error } = await supabase
-            .from("contact_messages")
-            .select("id, name, message, created_at, is_pinned, is_featured")
-            .eq("status", "approved")
-            .order("is_pinned", { ascending: false })
-            .order("is_featured", { ascending: false })
-            .order("created_at", { ascending: false });
+          const { data, error } = await supabase.rpc("get_approved_messages");
 
           if (error) {
             return new Response(JSON.stringify({ error: error.message }), {
