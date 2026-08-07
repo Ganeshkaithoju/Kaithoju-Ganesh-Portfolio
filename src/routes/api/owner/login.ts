@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { verifyOwnerCredentials, createOwnerSessionCookie } from "@/lib/owner-auth.server";
+import {
+  verifyOwnerCredentials,
+  createOwnerSessionCookie,
+  OwnerAuthConfigError,
+} from "@/lib/owner-auth.server";
 
 interface LoginRequest {
   email?: string;
