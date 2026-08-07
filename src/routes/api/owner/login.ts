@@ -47,6 +47,16 @@ export const Route = createFileRoute("/api/owner/login")({
             },
           });
         } catch (err) {
+          if (err instanceof OwnerAuthConfigError) {
+            console.error(err.message);
+            return new Response(
+              JSON.stringify({
+                error:
+                  "Owner dashboard is unavailable on this server because backend credentials are not configured.",
+              }),
+              { status: 503, headers: { "Content-Type": "application/json" } },
+            );
+          }
           console.error("Login error:", err);
           return new Response(JSON.stringify({ error: "Login failed" }), {
             status: 500,
