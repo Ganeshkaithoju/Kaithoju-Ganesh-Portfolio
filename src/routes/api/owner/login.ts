@@ -22,7 +22,8 @@ export const Route = createFileRoute("/api/owner/login")({
           }
 
           // Verify credentials against database
-          const isValid = await verifyOwnerCredentials(email, password);
+          const normalizedEmail = email.trim().toLowerCase();
+          const isValid = await verifyOwnerCredentials(normalizedEmail, password);
 
           if (!isValid) {
             return new Response(JSON.stringify({ error: "Invalid credentials" }), {
@@ -32,9 +33,9 @@ export const Route = createFileRoute("/api/owner/login")({
           }
 
           // Create session cookie
-          const cookie = createOwnerSessionCookie(email);
+          const cookie = createOwnerSessionCookie(normalizedEmail, request);
 
-          return new Response(JSON.stringify({ success: true, email }), {
+          return new Response(JSON.stringify({ success: true, email: normalizedEmail }), {
             status: 200,
             headers: {
               "Content-Type": "application/json",

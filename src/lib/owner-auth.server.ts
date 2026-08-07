@@ -43,7 +43,7 @@ export async function verifyOwnerCredentials(
     const { data, error } = await supabaseAdmin
       .from("admin_credentials")
       .select("password_hash")
-      .eq("email", email)
+      .eq("email", email.trim().toLowerCase())
       .single();
 
     if (error || !data) {

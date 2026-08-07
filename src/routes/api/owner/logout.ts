@@ -9,7 +9,7 @@ export const Route = createFileRoute("/api/owner/logout")({
           status: 200,
           headers: {
             "Content-Type": "application/json",
-            "Set-Cookie": clearOwnerSessionCookie(),
+            "Set-Cookie": clearOwnerSessionCookie(request),
           },
         });
       },
