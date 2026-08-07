@@ -4,7 +4,7 @@ import { clearOwnerSessionCookie } from "@/lib/owner-auth.server";
 export const Route = createFileRoute("/api/owner/logout")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
           headers: {
