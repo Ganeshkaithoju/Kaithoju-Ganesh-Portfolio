@@ -33,12 +33,37 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 /**
+ * Raised when the server is missing the backend credentials required for owner auth.
+ * Typically only happens outside the hosted environment (e.g. a local checkout
+ * whose .env has no SUPABASE_SERVICE_ROLE_KEY).
+ */
+export class OwnerAuthConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OwnerAuthConfigError";
+  }
+}
+
+/**
+ * True when the server has everything it needs to verify owner credentials.
+ */
+export function isOwnerAuthConfigured(): boolean {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+/**
  * Verify owner credentials against database
  */
 export async function verifyOwnerCredentials(
   email: string,
   password: string
 ): Promise<boolean> {
+  if (!isOwnerAuthConfigured()) {
+    throw new OwnerAuthConfigError(
+      "Owner dashboard is not configured on this server: SUPABASE_SERVICE_ROLE_KEY is missing.",
+    );
+  }
+
   try {
     const { data, error } = await supabaseAdmin
       .from("admin_credentials")
