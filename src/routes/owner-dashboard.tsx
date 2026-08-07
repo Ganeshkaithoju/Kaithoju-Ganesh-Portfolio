@@ -56,7 +56,7 @@ function OwnerDashboard() {
         fetch(
           `/api/owner/messages?status=${filter}&search=${search}&limit=${ITEMS_PER_PAGE}&offset=${
             page * ITEMS_PER_PAGE
-          }`
+          }`,
           { credentials: "include" }
         ),
         fetch("/api/owner/stats", { credentials: "include" }),
