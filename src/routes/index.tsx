@@ -208,7 +208,7 @@ function SectionHeading({ eyebrow, title, subtitle, id }: { eyebrow: string; tit
 function PortfolioPage() {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dark, setDark] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const [dark, setDark] = useState(true);
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 20, restDelta: 0.001 });
 
@@ -229,7 +229,9 @@ function PortfolioPage() {
     const storedTheme = window.localStorage.getItem("theme");
     if (storedTheme) {
       setDark(storedTheme === "dark");
+      return;
     }
+    setDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
   }, []);
 
   useEffect(() => {
