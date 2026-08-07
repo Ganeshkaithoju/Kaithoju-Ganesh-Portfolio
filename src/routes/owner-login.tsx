@@ -28,6 +28,7 @@ function OwnerLogin() {
       const response = await fetch("/api/owner/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 

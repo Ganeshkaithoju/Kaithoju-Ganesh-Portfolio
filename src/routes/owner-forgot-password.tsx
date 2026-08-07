@@ -52,6 +52,7 @@ function ForgotPassword() {
       const response = await fetch("/api/owner/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           email,
           answer1,
