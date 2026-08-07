@@ -56,9 +56,10 @@ function OwnerDashboard() {
         fetch(
           `/api/owner/messages?status=${filter}&search=${search}&limit=${ITEMS_PER_PAGE}&offset=${
             page * ITEMS_PER_PAGE
-          }`
+          }`,
+          { credentials: "include" }
         ),
-        fetch("/api/owner/stats"),
+        fetch("/api/owner/stats", { credentials: "include" }),
       ]);
 
       if (messagesRes.status === 401 || statsRes.status === 401) {
@@ -87,6 +88,7 @@ function OwnerDashboard() {
     try {
       const response = await fetch(`/api/owner/messages/${messageId}/${action}`, {
         method: "POST",
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -103,7 +105,7 @@ function OwnerDashboard() {
 
   async function handleLogout() {
     try {
-      await fetch("/api/owner/logout", { method: "POST" });
+      await fetch("/api/owner/logout", { method: "POST", credentials: "include" });
       navigate({ to: "/" });
     } catch (err) {
       console.error("Logout error:", err);

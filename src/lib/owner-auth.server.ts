@@ -43,7 +43,7 @@ export async function verifyOwnerCredentials(
     const { data, error } = await supabaseAdmin
       .from("admin_credentials")
       .select("password_hash")
-      .eq("email", email)
+      .eq("email", email.trim().toLowerCase())
       .single();
 
     if (error || !data) {
@@ -59,9 +59,26 @@ export async function verifyOwnerCredentials(
 }
 
 /**
+ * Cookie attributes.
+ * - HTTPS (preview / production, possibly embedded in an iframe): SameSite=None; Secure
+ * - Plain HTTP (local development, e.g. http://localhost:3000): SameSite=Lax without Secure,
+ *   because browsers drop `Secure` cookies on insecure origins.
+ */
+function cookieAttributes(request?: Request): string {
+  let isHttps = true;
+  if (request) {
+    const forwarded = request.headers.get("x-forwarded-proto");
+    isHttps = forwarded
+      ? forwarded.split(",")[0]!.trim() === "https"
+      : new URL(request.url).protocol === "https:";
+  }
+  return isHttps ? "Secure; SameSite=None" : "SameSite=Lax";
+}
+
+/**
  * Create signed owner session cookie
  */
-export function createOwnerSessionCookie(email: string): string {
+export function createOwnerSessionCookie(email: string, request?: Request): string {
   const session: OwnerSession = {
     email,
     authenticatedAt: Date.now(),
@@ -72,14 +89,14 @@ export function createOwnerSessionCookie(email: string): string {
   const value = `${payload}.${signature}`;
 
   const maxAge = 7 * 24 * 60 * 60;
-  return `owner_session=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`;
+  return `owner_session=${value}; Path=/; HttpOnly; ${cookieAttributes(request)}; Max-Age=${maxAge}`;
 }
 
 /**
  * Clear owner session cookie
  */
-export function clearOwnerSessionCookie(): string {
-  return "owner_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0";
+export function clearOwnerSessionCookie(request?: Request): string {
+  return `owner_session=; Path=/; HttpOnly; ${cookieAttributes(request)}; Max-Age=0`;
 }
 
 /**
