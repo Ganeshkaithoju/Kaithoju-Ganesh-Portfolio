@@ -3,6 +3,7 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { MessageCircle, X, Send, Sparkles, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { apiUrl } from "@/lib/apiClient";
 
 const STORAGE_KEY = "gk-portfolio-chat-v1";
 
@@ -10,6 +11,8 @@ const STARTER_PROMPTS = [
   "What is Ganesh working on?",
   "Tell me about his projects",
   "What are his top skills?",
+  "Give me an interview-ready introduction",
+  "What should he highlight in interviews?",
   "How can I contact him?",
 ];
 
@@ -57,7 +60,7 @@ export function PortfolioChatBot() {
   }, []);
 
   const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    transport: new DefaultChatTransport({ api: apiUrl("/chat") }),
     messages: initialMessages,
   });
 

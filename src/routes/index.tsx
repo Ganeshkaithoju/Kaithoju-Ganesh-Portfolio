@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { apiFetch } from "@/lib/apiClient";
 import { sendToWhatsApp } from "@/lib/whatsapp-integration.server";
 import resumeAsset from "@/assets/resume.pdf.asset.json";
 import { PublicComments } from "@/components/PublicComments";
@@ -864,9 +864,12 @@ function Contact() {
     }
     setSubmitting(true);
     try {
-      // Store in Supabase
-      const { error } = await supabase.from("contact_messages").insert(parsed.data);
-      if (error) throw error;
+      const response = await apiFetch("/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      if (!response.ok) throw new Error("Contact submission failed");
 
       // Send to WhatsApp Cloud API via Google Apps Script
       const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL;

@@ -2,14 +2,26 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MessageCircle, Pin, Star } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { apiFetch } from "@/lib/apiClient";
 
 interface Comment {
   id: string;
   name: string;
+  subject: string | null;
   message: string;
   created_at: string;
   is_pinned: boolean;
   is_featured: boolean;
+}
+
+function normalizeSubject(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const subject = value
+    .split(/\r?\n/)
+    .filter((line) => !/^\s*\d+\s*$/.test(line))
+    .join(" ")
+    .trim();
+  return subject || null;
 }
 
 export function PublicComments() {
@@ -21,14 +33,21 @@ export function PublicComments() {
     async function fetchComments() {
       try {
         setLoading(true);
-        const response = await fetch("/api/comments/approved");
+        const response = await apiFetch("/comments/approved", { cache: "no-store" });
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(data.error || "Failed to load comments");
         }
 
-        setComments(data.comments || []);
+        setComments(
+          (data.comments || []).map((comment: Comment) => ({
+            ...comment,
+            name: typeof comment.name === "string" ? comment.name.trim() : "",
+            subject: normalizeSubject(comment.subject),
+            message: typeof comment.message === "string" ? comment.message.trim() : "",
+          }))
+        );
       } catch (err) {
         console.error("Error loading comments:", err);
         setError(err instanceof Error ? err.message : "Failed to load comments");
@@ -97,7 +116,7 @@ export function PublicComments() {
               }`}
             >
               {/* Featured Badge */}
-              {comment.is_featured && (
+              {Boolean(comment.is_featured) && (
                 <div
                   aria-hidden="true"
                   className="absolute -right-12 -top-12 h-32 w-32 rounded-full opacity-30 blur-2xl"
@@ -106,7 +125,7 @@ export function PublicComments() {
               )}
 
               {/* Pinned Indicator */}
-              {comment.is_pinned && (
+              {Boolean(comment.is_pinned) && (
                 <div className="mb-3 flex items-center gap-1.5 text-xs text-primary">
                   <Pin className="h-3.5 w-3.5" aria-hidden="true" /> Pinned
                 </div>
@@ -114,10 +133,16 @@ export function PublicComments() {
 
               <div className="relative">
                 {/* Featured Star */}
-                {comment.is_featured && (
+                {Boolean(comment.is_featured) && (
                   <div aria-hidden="true" className="mb-3 inline-flex items-center gap-1 rounded-full glass px-2 py-1 text-xs">
                     <Star className="h-3 w-3 fill-primary text-primary" /> Featured
                   </div>
+                )}
+
+                {comment.subject && (
+                  <h3 className="mb-2 font-display text-lg font-semibold text-foreground sm:text-xl">
+                    {comment.subject}
+                  </h3>
                 )}
 
                 {/* Message */}

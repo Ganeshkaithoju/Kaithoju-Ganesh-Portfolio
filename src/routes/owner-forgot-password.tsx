@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, ArrowRight, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
+import { apiFetch, saveOwnerToken } from "@/lib/apiClient";
 
 const questions = [
   { id: 1, question: "What is your dream car?" },
@@ -49,7 +50,7 @@ function ForgotPassword() {
 
     try {
       setLoading(true);
-      const response = await fetch("/api/owner/reset-password", {
+      const response = await apiFetch("/owner/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -67,6 +68,7 @@ function ForgotPassword() {
         return;
       }
 
+      saveOwnerToken(data.token);
       toast.success("Answers verified! You've been logged in.");
       navigate({ to: "/owner-dashboard" });
     } catch (err) {

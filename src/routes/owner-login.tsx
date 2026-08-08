@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, Mail, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { apiFetch, saveOwnerToken } from "@/lib/apiClient";
 
 export const Route = createFileRoute("/owner-login")({
   component: OwnerLogin,
@@ -25,7 +26,7 @@ function OwnerLogin() {
 
     try {
       setLoading(true);
-      const response = await fetch("/api/owner/login", {
+      const response = await apiFetch("/owner/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -39,8 +40,12 @@ function OwnerLogin() {
         return;
       }
 
+      if (typeof data.token !== "string" || !data.token) {
+        throw new Error("Login response did not include an authentication token");
+      }
+      saveOwnerToken(data.token);
       toast.success("Login successful!");
-      navigate({ to: "/owner-dashboard" });
+      await navigate({ to: "/owner-dashboard", replace: true });
     } catch (err) {
       console.error("Login error:", err);
       toast.error("Login failed");

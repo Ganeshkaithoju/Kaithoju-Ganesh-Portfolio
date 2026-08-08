@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { LogOut, Search, Eye, EyeOff, Trash2, Pin, Star, MessageCircle } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { toast } from "sonner";
+import { apiFetch, clearOwnerToken } from "@/lib/apiClient";
 
 interface Message {
   id: string;
@@ -53,22 +54,29 @@ function OwnerDashboard() {
       setLoading(true);
 
       const [messagesRes, statsRes] = await Promise.all([
-        fetch(
-          `/api/owner/messages?status=${filter}&search=${search}&limit=${ITEMS_PER_PAGE}&offset=${
+        apiFetch(
+          `/owner/messages?status=${filter}&search=${encodeURIComponent(search)}&limit=${ITEMS_PER_PAGE}&offset=${
             page * ITEMS_PER_PAGE
-          }`,
-          { credentials: "include" }
+          }`
         ),
-        fetch("/api/owner/stats", { credentials: "include" }),
+        apiFetch("/owner/stats"),
       ]);
 
       if (messagesRes.status === 401 || statsRes.status === 401) {
-        navigate({ to: "/owner-login" });
+        clearOwnerToken();
+        await navigate({ to: "/owner-login", replace: true });
         return;
       }
 
       const messagesData = await messagesRes.json();
       const statsData = await statsRes.json();
+
+      if (!messagesRes.ok) {
+        throw new Error(messagesData.detail || messagesData.error || "Failed to load messages");
+      }
+      if (!statsRes.ok) {
+        throw new Error(statsData.detail || statsData.error || "Failed to load dashboard stats");
+      }
 
       setMessages(messagesData.messages || []);
       setTotalMessages(messagesData.total || 0);
@@ -86,9 +94,8 @@ function OwnerDashboard() {
     action: "approve" | "hide" | "delete" | "pin" | "feature"
   ) {
     try {
-      const response = await fetch(`/api/owner/messages/${messageId}/${action}`, {
-        method: "POST",
-        credentials: "include",
+      const response = await apiFetch(`/owner/messages/${messageId}/${action}`, {
+        method: "PATCH",
       });
 
       if (!response.ok) {
@@ -105,7 +112,7 @@ function OwnerDashboard() {
 
   async function handleLogout() {
     try {
-      await fetch("/api/owner/logout", { method: "POST", credentials: "include" });
+      clearOwnerToken();
       navigate({ to: "/" });
     } catch (err) {
       console.error("Logout error:", err);
@@ -249,8 +256,8 @@ function OwnerDashboard() {
                     {msg.status === "pending" && <span className="text-yellow-400">● Pending</span>}
                     {msg.status === "approved" && <span className="text-green-400">● Approved</span>}
                     {msg.status === "hidden" && <span className="text-gray-400">● Hidden</span>}
-                    {msg.is_featured && <span className="ml-2 text-primary">⭐ Featured</span>}
-                    {msg.is_pinned && <span className="ml-2 text-primary">📌 Pinned</span>}
+                    {Boolean(msg.is_featured) && <span className="ml-2 text-primary">⭐ Featured</span>}
+                    {Boolean(msg.is_pinned) && <span className="ml-2 text-primary">📌 Pinned</span>}
                   </div>
                 </div>
 
