@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, Mail, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { saveOwnerToken, apiUrl } from "../lib/apiClient";
+import { saveOwnerToken } from "../lib/apiClient";
 
 export const Route = createFileRoute("/owner-login")({
   component: OwnerLogin,
@@ -25,7 +25,7 @@ function OwnerLogin() {
 
     try {
       setLoading(true);
-      const response = await fetch(apiUrl("/api/owner/login"), {
+      const response = await fetch("/api/owner/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

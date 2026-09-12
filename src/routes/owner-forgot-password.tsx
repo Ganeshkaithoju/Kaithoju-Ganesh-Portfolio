@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, ArrowRight, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
-import { saveOwnerToken, apiUrl } from "../lib/apiClient";
+import { saveOwnerToken } from "../lib/apiClient";
 
 const questions = [
   { id: 1, question: "What is your dream car?" },
@@ -51,7 +51,7 @@ function ForgotPassword() {
 
     try {
       setLoading(true);
-      const response = await fetch(apiUrl("/api/owner/reset-password"), {
+      const response = await fetch("/api/owner/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
