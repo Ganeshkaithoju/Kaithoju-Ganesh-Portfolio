@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, ArrowRight, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
+import { saveOwnerToken, apiUrl } from "../lib/apiClient";
 
 const questions = [
   { id: 1, question: "What is your dream car?" },
@@ -18,6 +19,7 @@ function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [answer1, setAnswer1] = useState("");
   const [answer2, setAnswer2] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<"email" | "questions">("email");
 
@@ -42,20 +44,21 @@ function ForgotPassword() {
   async function handleResetPassword(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!answer1 || !answer2) {
-      toast.error("Please answer both questions");
+    if (!answer1 || !answer2 || !newPassword) {
+      toast.error("Please answer both questions and provide a new password");
       return;
     }
 
     try {
       setLoading(true);
-      const response = await fetch("/api/owner/reset-password", {
+      const response = await fetch(apiUrl("/api/owner/reset-password"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
           answer1,
           answer2,
+          newPassword,
         }),
       });
 
@@ -66,7 +69,8 @@ function ForgotPassword() {
         return;
       }
 
-      toast.success("Answers verified! You've been logged in.");
+      saveOwnerToken(data.token);
+      toast.success("Password reset successful! You've been logged in.");
       navigate({ to: "/owner-dashboard" });
     } catch (err) {
       console.error("Reset error:", err);
@@ -172,6 +176,23 @@ function ForgotPassword() {
                 />
               </div>
 
+              {/* New Password */}
+              <div>
+                <label htmlFor="newPassword" className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
+                  New Password
+                </label>
+                <input
+                  id="newPassword"
+                  type="password"
+                  placeholder="New password (min 8 chars)"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+                  required
+                  minLength={8}
+                />
+              </div>
+
               {/* Buttons */}
               <div className="space-y-3 pt-4">
                 <button
@@ -186,7 +207,7 @@ function ForgotPassword() {
                     </>
                   ) : (
                     <>
-                      Verify Answers <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                      Reset Password <ArrowRight aria-hidden="true" className="h-4 w-4" />
                     </>
                   )}
                 </button>
