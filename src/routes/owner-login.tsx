@@ -1,9 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Lock, Mail, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { apiFetch, saveOwnerToken } from "@/lib/apiClient";
 
 export const Route = createFileRoute("/owner-login")({
   component: OwnerLogin,
@@ -13,7 +12,6 @@ function OwnerLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
@@ -26,10 +24,9 @@ function OwnerLogin() {
 
     try {
       setLoading(true);
-      const response = await apiFetch("/owner/login", {
+      const response = await fetch("/api/owner/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 
@@ -40,12 +37,8 @@ function OwnerLogin() {
         return;
       }
 
-      if (typeof data.token !== "string" || !data.token) {
-        throw new Error("Login response did not include an authentication token");
-      }
-      saveOwnerToken(data.token);
       toast.success("Login successful!");
-      await navigate({ to: "/owner-dashboard", replace: true });
+      navigate({ to: "/owner-dashboard" });
     } catch (err) {
       console.error("Login error:", err);
       toast.error("Login failed");
@@ -59,8 +52,8 @@ function OwnerLogin() {
       {/* Background */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
-        <div className="absolute -top-40 -left-40 h-125 w-125 animate-blob rounded-full opacity-30" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.5), transparent 60%)" }} />
-        <div className="absolute top-1/3 -right-40 h-150 w-150 animate-blob rounded-full opacity-25" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.5), transparent 60%)", animationDelay: "4s" }} />
+        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] animate-blob rounded-full opacity-30" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.5), transparent 60%)" }} />
+        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] animate-blob rounded-full opacity-25" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.5), transparent 60%)", animationDelay: "4s" }} />
       </div>
 
       {/* Login Card */}
@@ -102,7 +95,7 @@ function OwnerLogin() {
                   placeholder="owner@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/3 px-4 py-3 pl-12 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 pl-12 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
                   required
                 />
               </div>
@@ -117,21 +110,13 @@ function OwnerLogin() {
                 <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" aria-hidden="true" />
                 <input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-white/3 px-4 py-3 pl-12 pr-10 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 pl-12 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-muted-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
-                </button>
               </div>
             </div>
 
@@ -165,12 +150,12 @@ function OwnerLogin() {
             </a>
           </div>
 
-          {/* Info - not required*/}
-          {/* <div className="mt-6 rounded-lg border border-white/10 bg-white/3 p-4 text-xs text-muted-foreground">
+          {/* Info */}
+          <div className="mt-6 rounded-lg border border-white/10 bg-white/[0.03] p-4 text-xs text-muted-foreground">
             <p className="font-medium text-foreground mb-2">Credentials:</p>
             <p>Email: from environment variable</p>
             <p className="mt-1">Password: from environment variable</p>
-          </div> */}
+          </div>
         </div>
       </motion.div>
     </div>

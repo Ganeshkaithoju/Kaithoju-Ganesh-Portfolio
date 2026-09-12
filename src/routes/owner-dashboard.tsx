@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { LogOut, Search, Eye, EyeOff, Trash2, Pin, Star, MessageCircle } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { toast } from "sonner";
-import { apiFetch, clearOwnerToken } from "@/lib/apiClient";
 
 interface Message {
   id: string;
@@ -54,29 +53,21 @@ function OwnerDashboard() {
       setLoading(true);
 
       const [messagesRes, statsRes] = await Promise.all([
-        apiFetch(
-          `/owner/messages?status=${filter}&search=${encodeURIComponent(search)}&limit=${ITEMS_PER_PAGE}&offset=${
+        fetch(
+          `/api/owner/messages?status=${filter}&search=${search}&limit=${ITEMS_PER_PAGE}&offset=${
             page * ITEMS_PER_PAGE
           }`
         ),
-        apiFetch("/owner/stats"),
+        fetch("/api/owner/stats"),
       ]);
 
       if (messagesRes.status === 401 || statsRes.status === 401) {
-        clearOwnerToken();
-        await navigate({ to: "/owner-login", replace: true });
+        navigate({ to: "/owner-login" });
         return;
       }
 
       const messagesData = await messagesRes.json();
       const statsData = await statsRes.json();
-
-      if (!messagesRes.ok) {
-        throw new Error(messagesData.detail || messagesData.error || "Failed to load messages");
-      }
-      if (!statsRes.ok) {
-        throw new Error(statsData.detail || statsData.error || "Failed to load dashboard stats");
-      }
 
       setMessages(messagesData.messages || []);
       setTotalMessages(messagesData.total || 0);
@@ -94,8 +85,8 @@ function OwnerDashboard() {
     action: "approve" | "hide" | "delete" | "pin" | "feature"
   ) {
     try {
-      const response = await apiFetch(`/owner/messages/${messageId}/${action}`, {
-        method: "PATCH",
+      const response = await fetch(`/api/owner/messages/${messageId}/${action}`, {
+        method: "POST",
       });
 
       if (!response.ok) {
@@ -112,7 +103,7 @@ function OwnerDashboard() {
 
   async function handleLogout() {
     try {
-      clearOwnerToken();
+      await fetch("/api/owner/logout", { method: "POST" });
       navigate({ to: "/" });
     } catch (err) {
       console.error("Logout error:", err);
@@ -196,7 +187,7 @@ function OwnerDashboard() {
                 setSearch(e.target.value);
                 setPage(0);
               }}
-              className="w-full rounded-xl border border-white/10 bg-white/3 px-4 py-3 pl-12 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+              className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 pl-12 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
             />
           </div>
 
@@ -256,8 +247,8 @@ function OwnerDashboard() {
                     {msg.status === "pending" && <span className="text-yellow-400">● Pending</span>}
                     {msg.status === "approved" && <span className="text-green-400">● Approved</span>}
                     {msg.status === "hidden" && <span className="text-gray-400">● Hidden</span>}
-                    {Boolean(msg.is_featured) && <span className="ml-2 text-primary">⭐ Featured</span>}
-                    {Boolean(msg.is_pinned) && <span className="ml-2 text-primary">📌 Pinned</span>}
+                    {msg.is_featured && <span className="ml-2 text-primary">⭐ Featured</span>}
+                    {msg.is_pinned && <span className="ml-2 text-primary">📌 Pinned</span>}
                   </div>
                 </div>
 

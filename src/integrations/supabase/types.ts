@@ -85,17 +85,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_approved_messages: {
-        Args: never
-        Returns: {
-          created_at: string
-          id: string
-          is_featured: boolean
-          is_pinned: boolean
-          message: string
-          name: string
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

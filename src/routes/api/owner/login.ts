@@ -1,9 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  verifyOwnerCredentials,
-  createOwnerSessionCookie,
-  OwnerAuthConfigError,
-} from "@/lib/owner-auth.server";
+import { verifyOwnerCredentials, createOwnerSessionCookie } from "@/lib/owner-auth.server";
 
 interface LoginRequest {
   email?: string;
@@ -26,8 +22,7 @@ export const Route = createFileRoute("/api/owner/login")({
           }
 
           // Verify credentials against database
-          const normalizedEmail = email.trim().toLowerCase();
-          const isValid = await verifyOwnerCredentials(normalizedEmail, password);
+          const isValid = await verifyOwnerCredentials(email, password);
 
           if (!isValid) {
             return new Response(JSON.stringify({ error: "Invalid credentials" }), {
@@ -37,9 +32,9 @@ export const Route = createFileRoute("/api/owner/login")({
           }
 
           // Create session cookie
-          const cookie = createOwnerSessionCookie(normalizedEmail, request);
+          const cookie = createOwnerSessionCookie(email);
 
-          return new Response(JSON.stringify({ success: true, email: normalizedEmail }), {
+          return new Response(JSON.stringify({ success: true, email }), {
             status: 200,
             headers: {
               "Content-Type": "application/json",
@@ -47,16 +42,6 @@ export const Route = createFileRoute("/api/owner/login")({
             },
           });
         } catch (err) {
-          if (err instanceof OwnerAuthConfigError) {
-            console.error(err.message);
-            return new Response(
-              JSON.stringify({
-                error:
-                  "Owner dashboard is unavailable on this server because backend credentials are not configured.",
-              }),
-              { status: 503, headers: { "Content-Type": "application/json" } },
-            );
-          }
           console.error("Login error:", err);
           return new Response(JSON.stringify({ error: "Login failed" }), {
             status: 500,

@@ -56,7 +56,7 @@ export const Route = createFileRoute("/api/owner/reset-password")({
           }
 
           // Create session (successful password reset verification)
-          const cookie = createOwnerSessionCookie(email, request);
+          const cookie = createOwnerSessionCookie(email);
 
           return new Response(
             JSON.stringify({ 

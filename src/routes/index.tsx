@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/apiClient";
+import { supabase } from "@/integrations/supabase/client";
 import { sendToWhatsApp } from "@/lib/whatsapp-integration.server";
 import resumeAsset from "@/assets/resume.pdf.asset.json";
 import { PublicComments } from "@/components/PublicComments";
@@ -14,8 +14,8 @@ import { PublicComments } from "@/components/PublicComments";
 export const Route = createFileRoute("/")({ component: PortfolioPage });
 
 /* ============================================================
-  DATA (from resume)
-  ============================================================ */
+   DATA (from resume)
+   ============================================================ */
 const RESUME_URL = resumeAsset.url;
 const EMAIL = "ganeshkaithoju4685@gmail.com";
 const PHONE_DISPLAY = "+91 93923 79339";
@@ -97,7 +97,6 @@ const TIMELINE = [
   { year: "2022", title: "Started B.Tech (ECE)", desc: "Began Electronics & Communication Engineering at Narasimha Reddy Engineering College.", icon: Code2 },
   { year: "2025", title: "Python Intern @ YBI Foundation", desc: "Built projects like Tic-Tac-Toe and Rock-Paper-Scissors while learning core Python.", icon: Rocket },
   { year: "2025", title: "Summer Intern @ BHEL", desc: "Team member on a thermal power systems project — analysed PLC and CNC processes at BHEL Hyderabad.", icon: Briefcase },
-  { year: "2026", title: "Completed B.Tech (ECE)", desc: "Graduated from Narasimha Reddy Engineering College with CGPA 8.44/10.", icon: GraduationCap },
   { year: "2026", title: "Intern @ Lumen Technologies", desc: "Intern on the Backup & Restore team at Lumen Technologies India — Bengaluru.", icon: HardDrive },
 ];
 
@@ -140,7 +139,7 @@ const CERTIFICATIONS = [
 const MARQUEE = ["Python", "Java", "React", "Spring Boot", "MySQL", "HTML", "CSS", "JavaScript", "Arduino", "NodeMCU", "Embedded C", "Git", "UiPath", "REST APIs", "OOP"];
 
 /* ============================================================
-  HOOKS / PRIMITIVES
+   HOOKS / PRIMITIVES
    ============================================================ */
 function useMagnetic(strength = 0.35) {
   const ref = useRef<HTMLElement | null>(null);
@@ -203,7 +202,7 @@ function SectionHeading({ eyebrow, title, subtitle, id }: { eyebrow: string; tit
 }
 
 /* ============================================================
-  PAGE
+   PAGE
    ============================================================ */
 function PortfolioPage() {
   const [loading, setLoading] = useState(true);
@@ -225,21 +224,8 @@ function PortfolioPage() {
   }, [cx, cy]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const storedTheme = window.localStorage.getItem("theme");
-    if (storedTheme) {
-      setDark(storedTheme === "dark");
-      return;
-    }
-    setDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
-  }, []);
-
-  useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.classList.toggle("dark", dark);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("theme", dark ? "dark" : "light");
-    }
   }, [dark]);
 
   return (
@@ -271,9 +257,9 @@ function PortfolioPage() {
       {/* Ambient background */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
-        <div className="absolute -top-40 -left-40 h-125 w-125 animate-blob rounded-full opacity-30" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.5), transparent 60%)" }} />
-        <div aria-hidden="true" className="absolute top-1/3 -right-40 h-150 w-150 animate-blob rounded-full opacity-25" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.5), transparent 60%)", animationDelay: "4s" }} />
-        <div className="absolute bottom-0 left-1/3 h-100 w-100 animate-blob rounded-full opacity-20" style={{ background: "radial-gradient(circle, oklch(0.7 0.18 220 / 0.5), transparent 60%)", animationDelay: "8s" }} />
+        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] animate-blob rounded-full opacity-30" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.5), transparent 60%)" }} />
+        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] animate-blob rounded-full opacity-25" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.5), transparent 60%)", animationDelay: "4s" }} />
+        <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] animate-blob rounded-full opacity-20" style={{ background: "radial-gradient(circle, oklch(0.7 0.18 220 / 0.5), transparent 60%)", animationDelay: "8s" }} />
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(oklch(1 0 0) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
       </div>
 
@@ -301,7 +287,7 @@ function PortfolioPage() {
 }
 
 /* ============================================================
-  NAVBAR
+   NAVBAR
    ============================================================ */
 function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setNavOpen: (v: boolean) => void; dark: boolean; setDark: (v: boolean) => void }) {
   const [scrolled, setScrolled] = useState(false);
@@ -327,8 +313,7 @@ function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setN
             {dark ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
           </button>
           <a href="#contact" className="hidden rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 md:inline-flex">Let's talk</a>
-          <button type="button" aria-label={navOpen ? "Close menu" : "Open menu"} aria-expanded={navOpen ? "true" : "false"}
-            aria-controls="mobile-nav" className="grid h-11 w-11 place-items-center rounded-lg glass md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60" onClick={() => setNavOpen(!navOpen)}>
+          <button type="button" aria-label={navOpen ? "Close menu" : "Open menu"} aria-expanded={navOpen} aria-controls="mobile-nav" className="grid h-11 w-11 place-items-center rounded-lg glass md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60" onClick={() => setNavOpen(!navOpen)}>
             {navOpen ? <X className="h-4 w-4" aria-hidden="true" /> : <Menu className="h-4 w-4" aria-hidden="true" />}
           </button>
         </div>
@@ -349,7 +334,7 @@ function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setN
 }
 
 /* ============================================================
-  HERO
+   HERO
    ============================================================ */
 function TypingText({ words }: { words: string[] }) {
   const [i, setI] = useState(0);
@@ -719,7 +704,7 @@ function Projects() {
 }
 
 /* ============================================================
-    TIMELINE
+   TIMELINE
    ============================================================ */
 function Timeline() {
   return (
@@ -753,7 +738,7 @@ function Timeline() {
 }
 
 /* ============================================================
-    SERVICES
+   SERVICES
    ============================================================ */
 function Services() {
   return (
@@ -777,7 +762,7 @@ function Services() {
 }
 
 /* ============================================================
-    WHY HIRE
+   WHY HIRE
    ============================================================ */
 function WhyHire() {
   return (
@@ -799,7 +784,7 @@ function WhyHire() {
 }
 
 /* ============================================================
-    CERTIFICATIONS
+   CERTIFICATIONS
    ============================================================ */
 function Certifications() {
   return (
@@ -825,7 +810,7 @@ function Certifications() {
 }
 
 /* ============================================================
-    CONTACT (wired to Lovable Cloud)
+   CONTACT
    ============================================================ */
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name too long"),
@@ -837,14 +822,11 @@ const contactSchema = z.object({
 function Contact() {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof z.infer<typeof contactSchema>, string>>>({});
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrors({});
-    const formElement = e.currentTarget;
-    const fd = new FormData(formElement);
+    const fd = new FormData(e.currentTarget);
     const payload = {
       name: String(fd.get("name") ?? ""),
       email: String(fd.get("email") ?? ""),
@@ -864,12 +846,9 @@ function Contact() {
     }
     setSubmitting(true);
     try {
-      const response = await apiFetch("/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
-      });
-      if (!response.ok) throw new Error("Contact submission failed");
+      // Store in Supabase
+      const { error } = await supabase.from("contact_messages").insert(parsed.data);
+      if (error) throw error;
 
       // Send to WhatsApp Cloud API via Google Apps Script
       const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL;
@@ -880,139 +859,61 @@ function Contact() {
         }
       }
 
-      // Clear form and errors
-      setErrors({});
-      formElement.reset();
-      setShowSuccessModal(true);
+      toast.success("Thank you for sending message. I appreciate your time and efforts. I have successfully received your message");
+      (e.currentTarget as HTMLFormElement).reset();
     } catch (err) {
       console.error("Contact submission failed", err);
-      setShowErrorModal(true);
+      toast.error("There is a failure occurred while sharing your message, please try after some time");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <>
-      <section id="contact" aria-labelledby="contact-title" className="relative px-4 py-24 sm:px-6">
-        <div className="mx-auto max-w-6xl">
-          <SectionHeading id="contact-title" eyebrow="Contact" title={<>Let's build <span className="text-gradient">something great</span></>} subtitle="Have a project, a role, or just want to say hi? My inbox is open." />
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
-            <div className="space-y-4">
-              {[
-                { icon: Mail, label: "Email", value: EMAIL, href: `mailto:${EMAIL}` },
-                { icon: Phone, label: "Phone", value: PHONE_DISPLAY, href: `tel:${PHONE_TEL}` },
-                { icon: MapPin, label: "Location", value: "Hyderabad, Telangana, India", href: "https://www.google.com/maps/place/Hyderabad" },
-                { icon: Linkedin, label: "LinkedIn", value: "/in/ganesh-kaithoju", href: LINKEDIN },
-                { icon: Download, label: "Resume", value: "Download PDF", href: RESUME_URL },
-              ].map((c) => (
-                <a key={c.label} href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel={c.href.startsWith("http") ? "noreferrer" : undefined} className="card-premium group flex items-center gap-4 p-5 transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
-                  <div aria-hidden="true" className="grid h-11 w-11 place-items-center rounded-xl glass"><c.icon className="h-5 w-5 text-primary" /></div>
-                  <div>
-                    <div className="text-xs uppercase tracking-widest text-muted-foreground">{c.label}</div>
-                    <div className="font-medium">{c.value}</div>
-                  </div>
-                  <ArrowUpRight aria-hidden="true" className="ml-auto h-4 w-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                </a>
-              ))}
-            </div>
-            <motion.form initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} onSubmit={onSubmit} noValidate className="card-premium space-y-4 p-8" aria-label="Contact form">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Name" name="name" placeholder="Your name" required maxLength={100} error={errors.name} />
-                <Field label="Email" name="email" type="email" placeholder="you@example.com" required maxLength={255} error={errors.email} />
-              </div>
-              <Field label="Subject" name="subject" placeholder="What's this about?" required maxLength={200} error={errors.subject} />
-              <Field label="Message" name="message" placeholder="Tell me a bit about your project…" textarea required maxLength={2000} error={errors.message} />
-              <button type="submit" disabled={submitting} className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-all hover:shadow-[0_0_40px_oklch(0.85_0.18_165/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-60 disabled:cursor-not-allowed">
-                {submitting ? "Sending…" : (<>Send message <Send aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-1" /></>)}
-              </button>
-              <p className="text-xs text-muted-foreground">Your message is stored securely and only I can read it.</p>
-            </motion.form>
+    <section id="contact" aria-labelledby="contact-title" className="relative px-4 py-24 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <SectionHeading id="contact-title" eyebrow="Contact" title={<>Let's build <span className="text-gradient">something great</span></>} subtitle="Have a project, a role, or just want to say hi? My inbox is open." />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
+          <div className="space-y-4">
+            {[
+              { icon: Mail, label: "Email", value: EMAIL, href: `mailto:${EMAIL}` },
+              { icon: Phone, label: "Phone", value: PHONE_DISPLAY, href: `tel:${PHONE_TEL}` },
+              { icon: MapPin, label: "Location", value: "Hyderabad, Telangana, India", href: "https://www.google.com/maps/place/Hyderabad" },
+              { icon: Linkedin, label: "LinkedIn", value: "/in/ganesh-kaithoju", href: LINKEDIN },
+              { icon: Download, label: "Resume", value: "Download PDF", href: RESUME_URL },
+            ].map((c) => (
+              <a key={c.label} href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel={c.href.startsWith("http") ? "noreferrer" : undefined} className="card-premium group flex items-center gap-4 p-5 transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+                <div aria-hidden="true" className="grid h-11 w-11 place-items-center rounded-xl glass"><c.icon className="h-5 w-5 text-primary" /></div>
+                <div>
+                  <div className="text-xs uppercase tracking-widest text-muted-foreground">{c.label}</div>
+                  <div className="font-medium">{c.value}</div>
+                </div>
+                <ArrowUpRight aria-hidden="true" className="ml-auto h-4 w-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
+            ))}
           </div>
-        </div>
-      </section>
-
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3 }}
-            className="card-premium relative w-full max-w-md p-8 text-center"
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              aria-hidden="true"
-              className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20"
-            >
-              <svg className="h-8 w-8 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </motion.div>
-
-            <h3 className="mb-3 font-display text-2xl font-bold">Thank You!</h3>
-            <p className="mb-8 text-base leading-relaxed text-muted-foreground">
-              Thank you for sending message. I appreciate your time and efforts. I have successfully received your message.
-            </p>
-
-            <button
-              onClick={() => setShowSuccessModal(false)}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3 font-medium text-primary-foreground transition-all hover:shadow-[0_0_40px_oklch(0.85_0.18_165/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-            >
-              Close
+          <motion.form initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} onSubmit={onSubmit} noValidate className="card-premium space-y-4 p-8" aria-label="Contact form">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Name" name="name" placeholder="Your name" required maxLength={100} error={errors.name} />
+              <Field label="Email" name="email" type="email" placeholder="you@example.com" required maxLength={255} error={errors.email} />
+            </div>
+            <Field label="Subject" name="subject" placeholder="What's this about?" required maxLength={200} error={errors.subject} />
+            <Field label="Message" name="message" placeholder="Tell me a bit about your project…" textarea required maxLength={2000} error={errors.message} />
+            <button type="submit" disabled={submitting} className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 font-medium text-primary-foreground transition-all hover:shadow-[0_0_40px_oklch(0.85_0.18_165/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-60 disabled:cursor-not-allowed">
+              {submitting ? "Sending…" : (<>Send message <Send aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-1" /></>)}
             </button>
-          </motion.div>
+            <p className="text-xs text-muted-foreground">Your message is stored securely and only I can read it.</p>
+          </motion.form>
         </div>
-      )}
-
-      {/* Error Modal */}
-      {showErrorModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3 }}
-            className="card-premium relative w-full max-w-md p-8 text-center"
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              aria-hidden="true"
-              className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20"
-            >
-              <svg className="h-8 w-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </motion.div>
-
-            <h3 className="mb-3 font-display text-2xl font-bold">Oops!</h3>
-            <p className="mb-8 text-base leading-relaxed text-muted-foreground">
-              There is a failure occurred while sharing your message, please try after some time.
-            </p>
-
-            <button
-              onClick={() => setShowErrorModal(false)}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3 font-medium text-primary-foreground transition-all hover:shadow-[0_0_40px_oklch(0.85_0.18_165/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-            >
-              Close
-            </button>
-          </motion.div>
-        </div>
-      )}
-    </>
+      </div>
+    </section>
   );
 }
 
 function Field({ label, name, type = "text", placeholder, required, textarea, maxLength, error }: { label: string; name: string; type?: string; placeholder?: string; required?: boolean; textarea?: boolean; maxLength?: number; error?: string }) {
   const id = `field-${name}`;
   const errId = `${id}-error`;
-  const cls = `w-full rounded-xl border ${error ? "border-red-400/70" : "border-white/10"} bg-white/3 px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition`;
+  const cls = `w-full rounded-xl border ${error ? "border-red-400/70" : "border-white/10"} bg-white/[0.03] px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition`;
   return (
     <div>
       <label htmlFor={id} className="mb-1.5 block text-xs uppercase tracking-widest text-muted-foreground">
@@ -1029,7 +930,7 @@ function Field({ label, name, type = "text", placeholder, required, textarea, ma
 }
 
 /* ============================================================
-    FOOTER
+   FOOTER
    ============================================================ */
 function Footer() {
   return (
