@@ -39,3 +39,6 @@ dist-ssr
 # Private / internal documentation
 *.md
 !/README.md
+
+# Supabase
+supabase/migrations

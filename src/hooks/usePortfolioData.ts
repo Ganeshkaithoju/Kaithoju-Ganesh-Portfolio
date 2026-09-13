@@ -30,7 +30,7 @@ export function usePortfolioData() {
   const { data: projects, isLoading: loadingProjects } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('projects').select('*').order('display_order');
+      const { data, error } = await supabase.from('projects').select('*').eq('is_visible', true).order('display_order');
       if (error) {
         console.error("Error fetching projects:", error);
         return [];
@@ -45,7 +45,7 @@ export function usePortfolioData() {
   const { data: skills, isLoading: loadingSkills } = useQuery({
     queryKey: ['skills'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('skills').select('*').order('display_order');
+      const { data, error } = await supabase.from('skills').select('*').eq('is_visible', true).order('display_order');
       if (error) {
         console.error("Error fetching skills:", error);
         return [];
@@ -70,7 +70,7 @@ export function usePortfolioData() {
   const { data: experience, isLoading: loadingExperience } = useQuery({
     queryKey: ['experience'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('experience').select('*').order('display_order');
+      const { data, error } = await supabase.from('experience').select('*').eq('is_visible', true).order('display_order');
       if (error) {
         console.error("Error fetching experience:", error);
         return [];
@@ -85,7 +85,7 @@ export function usePortfolioData() {
   const { data: education, isLoading: loadingEducation } = useQuery({
     queryKey: ['education'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('education').select('*').order('display_order');
+      const { data, error } = await supabase.from('education').select('*').eq('is_visible', true).order('display_order');
       if (error) {
         console.error("Error fetching education:", error);
         return [];
@@ -97,46 +97,61 @@ export function usePortfolioData() {
   const { data: services, isLoading: loadingServices } = useQuery({
     queryKey: ['services'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('services').select('*').order('display_order');
+      const { data, error } = await supabase.from('services').select('*').eq('is_visible', true).order('display_order');
       if (error) {
         console.error("Error fetching services:", error);
         return [];
       }
       return data.map(s => ({
         ...s,
+        desc: s.description,
         icon: iconMap[s.icon_name || 'Globe'] || Globe
       }));
     }
   });
 
+
   const { data: whyHire, isLoading: loadingWhyHire } = useQuery({
     queryKey: ['why_hire'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('why_hire_reasons').select('*').order('display_order');
+      const { data, error } = await supabase.from('why_hire_reasons').select('*').eq('is_visible', true).order('display_order');
       if (error) return [];
-      return data;
+      return data.map(w => ({
+        ...w,
+        desc: w.description
+      }));
     }
   });
 
   const { data: achievements, isLoading: loadingAchievements } = useQuery({
     queryKey: ['achievements'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('achievements').select('*').order('display_order');
+      const { data, error } = await supabase.from('achievements').select('*').eq('is_visible', true).order('display_order');
       if (error) return [];
-      return data;
+      return data.map(a => {
+        const match = a.metric.match(/^([0-9.]+)(.*)$/);
+        return {
+          ...a,
+          label: a.title,
+          value: match ? match[1] : a.metric,
+          suffix: match ? match[2] : ""
+        };
+      });
     }
   });
 
   const { data: certifications, isLoading: loadingCertifications } = useQuery({
     queryKey: ['certifications'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('certifications').select('*').order('display_order');
+      const { data, error } = await supabase.from('certifications').select('*').eq('is_visible', true).order('display_order');
       if (error) {
         console.error("Error fetching certifications:", error);
         return [];
       }
       return data.map(c => ({
         ...c,
+        title: c.title || c.name,
+        platform: c.platform || c.issuer,
         icon: iconMap[c.icon_name || 'Award'] || Award
       }));
     }
@@ -145,9 +160,27 @@ export function usePortfolioData() {
   const { data: marquee, isLoading: loadingMarquee } = useQuery({
     queryKey: ['marquee'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('marquee_items').select('*').order('display_order');
+      const { data, error } = await supabase.from('marquee_items').select('*').eq('is_visible', true).order('display_order');
       if (error) return [];
       return data.map(m => m.text);
+    }
+  });
+
+  const { data: sections, isLoading: loadingSections } = useQuery({
+    queryKey: ['sections'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('website_sections').select('*').eq('is_visible', true).order('display_order');
+      if (error) return [];
+      return data;
+    }
+  });
+
+  const { data: navigation, isLoading: loadingNavigation } = useQuery({
+    queryKey: ['navigation'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('navigation_links').select('*').order('display_order');
+      if (error) return [];
+      return data;
     }
   });
 
@@ -162,6 +195,8 @@ export function usePortfolioData() {
     achievements,
     certifications,
     marquee,
-    isLoading: loadingSettings || loadingProjects || loadingSkills || loadingExperience || loadingEducation || loadingServices || loadingWhyHire || loadingAchievements || loadingCertifications || loadingMarquee
+    sections,
+    navigation,
+    isLoading: loadingSettings || loadingProjects || loadingSkills || loadingExperience || loadingEducation || loadingServices || loadingWhyHire || loadingAchievements || loadingCertifications || loadingMarquee || loadingSections || loadingNavigation
   };
 }

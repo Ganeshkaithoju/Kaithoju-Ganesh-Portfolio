@@ -1,32 +1,35 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useRef } from "react";
-import { motion } from "framer-motion";
-import { LogOut, Search, Eye, EyeOff, Trash2, Pin, Star, MessageCircle } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  LogOut, LayoutDashboard, Settings, Type, User, Code2, 
+  Briefcase, GraduationCap, Wrench, Star, Award, 
+  Medal, MessageCircle, FileImage, ShieldCheck, AlignLeft, Globe,
+  FileText
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Message {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  created_at: string;
-  moderated_at?: string;
-  status: "pending" | "approved" | "hidden" | "deleted";
-  is_pinned: boolean;
-  is_featured: boolean;
-}
-
-interface Stats {
-  total: number;
-  pending: number;
-  approved: number;
-  hidden: number;
-  featured: number;
-  pinned: number;
-}
+// Module components
+import { MessagesTab } from "@/components/dashboard/MessagesTab";
+import { SiteSettingsTab } from "@/components/dashboard/SiteSettingsTab";
+import { HeroTab } from "@/components/dashboard/HeroTab";
+import { AboutTab } from "@/components/dashboard/AboutTab";
+import { SkillsTab } from "@/components/dashboard/SkillsTab";
+import { ProjectsTab } from "@/components/dashboard/ProjectsTab";
+import { ExperienceTab } from "@/components/dashboard/ExperienceTab";
+import { EducationTab } from "@/components/dashboard/EducationTab";
+import { ServicesTab } from "@/components/dashboard/ServicesTab";
+import { WhyHireTab } from "@/components/dashboard/WhyHireTab";
+import { AchievementsTab } from "@/components/dashboard/AchievementsTab";
+import { CertificationsTab } from "@/components/dashboard/CertificationsTab";
+import { MarqueeTab } from "@/components/dashboard/MarqueeTab";
+import { SectionsTab } from "@/components/dashboard/SectionsTab";
+import { NavigationTab } from "@/components/dashboard/NavigationTab";
+import { MediaTab } from "@/components/dashboard/MediaTab";
+import { OverviewTab } from "@/components/dashboard/OverviewTab";
+import { AccountTab } from "@/components/dashboard/AccountTab";
+import { ResumeTab } from "@/components/dashboard/ResumeTab";
 
 export const Route = createFileRoute("/owner-dashboard")({
   component: OwnerDashboard,
@@ -34,106 +37,17 @@ export const Route = createFileRoute("/owner-dashboard")({
 
 function OwnerDashboard() {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("pending");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(0);
-  const [totalMessages, setTotalMessages] = useState(0);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-
-  const ITEMS_PER_PAGE = 10;
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    fetchData();
-  }, [filter, search, page]);
+    checkAuth();
+  }, []);
 
-  async function fetchData() {
-    try {
-      setLoading(true);
-
-      const { data: sessionData, error: authError } = await supabase.auth.getSession();
-      
-      if (authError || !sessionData.session) {
-        navigate({ to: "/owner-login" });
-        return;
-      }
-
-      let query = supabase
-        .from('messages')
-        .select('*', { count: 'exact' });
-
-      if (filter !== "all") {
-        query = query.eq('status', filter);
-      }
-
-      if (search) {
-        query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,subject.ilike.%${search}%,message.ilike.%${search}%`);
-      }
-
-      query = query
-        .order('created_at', { ascending: false })
-        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
-
-      const { data: messagesData, error, count } = await query;
-
-      if (error) {
-        throw error;
-      }
-
-      // Fetch stats
-      const { data: allMessages } = await supabase.from('messages').select('status, is_pinned, is_featured');
-      const statsObj = {
-        total: allMessages?.length || 0,
-        pending: allMessages?.filter((m) => m.status === 'pending').length || 0,
-        approved: allMessages?.filter((m) => m.status === 'approved').length || 0,
-        hidden: allMessages?.filter((m) => m.status === 'hidden').length || 0,
-        featured: allMessages?.filter((m) => m.is_featured).length || 0,
-        pinned: allMessages?.filter((m) => m.is_pinned).length || 0,
-      };
-
-      setMessages(messagesData || []);
-      setTotalMessages(count || 0);
-      setStats(statsObj);
-    } catch (err) {
-      console.error("Error fetching data:", err);
-      toast.error("Failed to load data");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function updateMessageStatus(
-    messageId: string,
-    action: "approve" | "hide" | "delete" | "pin" | "feature"
-  ) {
-    try {
-      let updateData = {};
-      if (action === "approve") updateData = { status: "approved" };
-      if (action === "hide") updateData = { status: "hidden" };
-      if (action === "pin") {
-        const msg = messages.find(m => m.id === messageId);
-        updateData = { is_pinned: !msg?.is_pinned };
-      }
-      if (action === "feature") {
-        const msg = messages.find(m => m.id === messageId);
-        updateData = { is_featured: !msg?.is_featured };
-      }
-
-      if (action === "delete") {
-        const { error } = await supabase.from('messages').delete().eq('id', messageId);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('messages').update(updateData).eq('id', messageId);
-        if (error) throw error;
-      }
-
-      toast.success(`Message updated successfully`);
-      await fetchData();
-    } catch (err) {
-      console.error(`Error updating message:`, err);
-      toast.error(`Failed to update message`);
+  async function checkAuth() {
+    const { data, error } = await supabase.auth.getSession();
+    if (error || !data.session) {
+      navigate({ to: "/owner-login" });
     }
   }
 
@@ -147,20 +61,109 @@ function OwnerDashboard() {
     }
   }
 
-  const filters = [
-    { label: "Pending", value: "pending" },
-    { label: "Approved", value: "approved" },
-    { label: "Hidden", value: "hidden" },
-    { label: "All Messages", value: "all" },
+  const navGroups = [
+    {
+      title: "Dashboard",
+      items: [
+        { id: "overview", label: "Overview", icon: LayoutDashboard },
+      ]
+    },
+    {
+      title: "Portfolio CMS",
+      items: [
+        { id: "site-settings", label: "Site Settings", icon: Settings },
+        { id: "hero", label: "Hero", icon: Type },
+        { id: "about", label: "About", icon: User },
+        { id: "skills", label: "Skills", icon: Code2 },
+        { id: "projects", label: "Projects", icon: Briefcase },
+        { id: "experience", label: "Experience", icon: Briefcase },
+        { id: "education", label: "Education", icon: GraduationCap },
+        { id: "services", label: "Services", icon: Wrench },
+        { id: "why-hire", label: "Why Hire Me", icon: Star },
+        { id: "achievements", label: "Achievements", icon: Award },
+        { id: "certifications", label: "Certifications", icon: Medal },
+        { id: "marquee", label: "Marquee", icon: AlignLeft },
+        { id: "resume", label: "Resume", icon: FileText },
+      ]
+    },
+    {
+      title: "Website",
+      items: [
+        { id: "sections", label: "Sections", icon: Globe },
+        { id: "media", label: "Media Assets", icon: FileImage },
+      ]
+    },
+    {
+      title: "Interactions",
+      items: [
+        { id: "messages", label: "Messages", icon: MessageCircle },
+        { id: "chat-logs", label: "Chat Logs", icon: MessageCircle },
+      ]
+    },
+    {
+      title: "Account",
+      items: [
+        { id: "account", label: "Admin Account", icon: ShieldCheck },
+      ]
+    }
   ];
 
-  const totalPages = Math.ceil(totalMessages / ITEMS_PER_PAGE);
+  function renderContent() {
+    switch (activeTab) {
+      case "overview":
+        return <OverviewTab />;
+      case "account":
+        return <AccountTab />;
+      case "messages":
+        return <MessagesTab />;
+      case "site-settings":
+        return <SiteSettingsTab />;
+      case "hero":
+        return <HeroTab />;
+      case "about":
+        return <AboutTab />;
+      case "skills":
+        return <SkillsTab />;
+      case "projects":
+        return <ProjectsTab />;
+      case "experience":
+        return <ExperienceTab />;
+      case "education":
+        return <EducationTab />;
+      case "services":
+        return <ServicesTab />;
+      case "why-hire":
+        return <WhyHireTab />;
+      case "achievements":
+        return <AchievementsTab />;
+      case "certifications":
+        return <CertificationsTab />;
+      case "marquee":
+        return <MarqueeTab />;
+      case "resume":
+        return <ResumeTab />;
+      case "sections":
+        return <SectionsTab />;
+      case "navigation":
+        return <NavigationTab />;
+      case "media":
+        return <MediaTab />;
+      default:
+        return (
+          <div className="card-premium p-12 text-center text-muted-foreground flex flex-col items-center justify-center min-h-[50vh]">
+            <Settings className="h-12 w-12 mb-4 opacity-20" />
+            <h2 className="text-xl font-display font-semibold text-foreground mb-2">Module Under Construction</h2>
+            <p>The {activeTab} CMS module is currently being built.</p>
+          </div>
+        );
+    }
+  }
 
   return (
-    <div className="min-h-dvh bg-background">
-      {/* Header */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
+    <div className="min-h-dvh bg-background flex">
+      {/* Sidebar Navigation */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-border/60 bg-background/95 backdrop-blur-xl transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:static md:block flex flex-col`}>
+        <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
               aria-hidden="true"
@@ -170,225 +173,78 @@ function OwnerDashboard() {
               OD
             </div>
             <div>
-              <div className="font-display font-semibold">Messages</div>
-              <div className="text-xs text-muted-foreground">Owner Dashboard</div>
+              <div className="font-display font-semibold">CMS Admin</div>
+              <div className="text-xs text-muted-foreground">Portfolio Platform</div>
             </div>
           </div>
+          <button className="md:hidden" onClick={() => setSidebarOpen(false)}>✕</button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-6 scrollbar-none">
+          {navGroups.map((group) => (
+            <div key={group.title}>
+              <h3 className="px-2 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {group.title}
+              </h3>
+              <nav className="space-y-1">
+                {group.items.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                      activeTab === item.id
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                    }`}
+                  >
+                    <item.icon className={`h-4 w-4 ${activeTab === item.id ? "text-primary" : "opacity-70"}`} />
+                    {item.label}
+                  </button>
+                ))}
+              </nav>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl px-4 py-4 sm:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button className="md:hidden p-2 -ml-2 text-muted-foreground" onClick={() => setSidebarOpen(true)}>
+              ☰
+            </button>
+            <h1 className="text-xl font-display font-semibold capitalize">
+              {navGroups.flatMap(g => g.items).find(i => i.id === activeTab)?.label}
+            </h1>
+          </div>
+          
           <button
             onClick={handleLogout}
             className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
           >
-            <LogOut className="h-4 w-4" aria-hidden="true" /> Logout
+            <LogOut className="h-4 w-4" aria-hidden="true" /> <span className="hidden sm:inline">Logout</span>
           </button>
-        </div>
-      </header>
+        </header>
 
-      {/* Main */}
-      <main className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
-        {/* Stats */}
-        {stats && (
-          <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-6">
-            {[
-              { label: "Total", value: stats.total },
-              { label: "Pending", value: stats.pending },
-              { label: "Approved", value: stats.approved },
-              { label: "Hidden", value: stats.hidden },
-              { label: "Featured", value: stats.featured },
-              { label: "Pinned", value: stats.pinned },
-            ].map((stat) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="card-premium p-4 text-center"
-              >
-                <div className="font-display text-2xl font-bold text-gradient">{stat.value}</div>
-                <div className="mt-1 text-xs uppercase tracking-widest text-muted-foreground">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-        {/* Filters & Search */}
-        <div className="mb-8 space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search by name, email, subject, or message..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(0);
-              }}
-              className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 pl-12 text-sm placeholder:text-muted-foreground focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
-            />
-          </div>
-
-          {/* Filter Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {filters.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => {
-                  setFilter(f.value);
-                  setPage(0);
-                }}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                  filter === f.value
-                    ? "bg-primary text-primary-foreground"
-                    : "glass hover:bg-white/10"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div className="space-y-4">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="flex gap-1.5">
-                <div className="h-2 w-2 animate-bounce rounded-full bg-primary" />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-primary" style={{ animationDelay: "0.2s" }} />
-                <div className="h-2 w-2 animate-bounce rounded-full bg-primary" style={{ animationDelay: "0.4s" }} />
-              </div>
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="card-premium p-8 text-center text-muted-foreground">
-              <MessageCircle className="mx-auto mb-3 h-8 w-8 opacity-50" aria-hidden="true" />
-              <p>No messages found</p>
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="card-premium p-6 sm:p-8"
-              >
-                <div className="mb-4 flex items-start justify-between">
-                  <div>
-                    <h3 className="font-display text-lg font-semibold">{msg.name}</h3>
-                    <p className="text-sm text-muted-foreground">{msg.email}</p>
-                    {msg.subject && (
-                      <p className="mt-1 text-sm font-medium text-foreground">Subject: {msg.subject}</p>
-                    )}
-                  </div>
-                  <div className="inline-flex items-center gap-1 rounded-full glass px-3 py-1 text-xs font-medium">
-                    {msg.status === "pending" && <span className="text-yellow-400">● Pending</span>}
-                    {msg.status === "approved" && <span className="text-green-400">● Approved</span>}
-                    {msg.status === "hidden" && <span className="text-gray-400">● Hidden</span>}
-                    {msg.is_featured && <span className="ml-2 text-primary">⭐ Featured</span>}
-                    {msg.is_pinned && <span className="ml-2 text-primary">📌 Pinned</span>}
-                  </div>
-                </div>
-
-                <p className="mb-4 leading-relaxed text-muted-foreground">{msg.message}</p>
-
-                <div className="mb-4 flex flex-wrap items-center gap-4 border-t border-border/60 pt-4 text-xs text-muted-foreground">
-                  <span>
-                    Created: {format(new Date(msg.created_at), "MMM d, yyyy HH:mm")}
-                  </span>
-                  {msg.moderated_at && (
-                    <span>
-                      Moderated: {format(new Date(msg.moderated_at), "MMM d, yyyy HH:mm")}
-                    </span>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-wrap gap-2">
-                  {msg.status === "pending" && (
-                    <button
-                      onClick={() => updateMessageStatus(msg.id, "approve")}
-                      className="inline-flex items-center gap-2 rounded-lg bg-green-500/20 px-3 py-2 text-xs font-medium text-green-400 transition-colors hover:bg-green-500/30"
-                    >
-                      ✅ Approve
-                    </button>
-                  )}
-                  {msg.status === "approved" && (
-                    <button
-                      onClick={() => updateMessageStatus(msg.id, "hide")}
-                      className="inline-flex items-center gap-2 rounded-lg bg-gray-500/20 px-3 py-2 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-500/30"
-                    >
-                      <EyeOff className="h-3.5 w-3.5" aria-hidden="true" /> Hide
-                    </button>
-                  )}
-                  {msg.status === "hidden" && (
-                    <button
-                      onClick={() => updateMessageStatus(msg.id, "approve")}
-                      className="inline-flex items-center gap-2 rounded-lg bg-blue-500/20 px-3 py-2 text-xs font-medium text-blue-400 transition-colors hover:bg-blue-500/30"
-                    >
-                      <Eye className="h-3.5 w-3.5" aria-hidden="true" /> Show
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => updateMessageStatus(msg.id, "pin")}
-                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-                      msg.is_pinned
-                        ? "bg-primary/20 text-primary hover:bg-primary/30"
-                        : "bg-white/10 text-muted-foreground hover:bg-white/20"
-                    }`}
-                  >
-                    <Pin className="h-3.5 w-3.5" aria-hidden="true" /> Pin
-                  </button>
-
-                  <button
-                    onClick={() => updateMessageStatus(msg.id, "feature")}
-                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-                      msg.is_featured
-                        ? "bg-primary/20 text-primary hover:bg-primary/30"
-                        : "bg-white/10 text-muted-foreground hover:bg-white/20"
-                    }`}
-                  >
-                    <Star className="h-3.5 w-3.5" aria-hidden="true" /> Feature
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      if (confirm("Delete this message permanently?")) {
-                        updateMessageStatus(msg.id, "delete");
-                      }
-                    }}
-                    className="ml-auto inline-flex items-center gap-2 rounded-lg bg-red-500/20 px-3 py-2 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/30"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> Delete
-                  </button>
-                </div>
-              </motion.div>
-            ))
-          )}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && !loading && (
-          <div className="mt-8 flex items-center justify-between">
-            <button
-              onClick={() => setPage(Math.max(0, page - 1))}
-              disabled={page === 0}
-              className="rounded-lg px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
             >
-              ← Previous
-            </button>
-            <div className="text-sm text-muted-foreground">
-              Page {page + 1} of {totalPages}
-            </div>
-            <button
-              onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-              disabled={page === totalPages - 1}
-              className="rounded-lg px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next →
-            </button>
-          </div>
-        )}
-      </main>
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
     </div>
   );
 }
+

@@ -2,23 +2,62 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useScroll, useSpring, useTransform, useMotionValue, AnimatePresence, useInView } from "framer-motion";
 import {
-  Github, Linkedin, Mail, Phone, MapPin, Download, ArrowUpRight, ArrowRight, Code2, Server, Database, Wrench, Brain, Sparkles, Rocket, Award, GraduationCap, Briefcase, ExternalLink, Send, Menu, X, Sun, Moon, Terminal, Layers, Cpu, Globe, Shield, Zap, Star, ChevronDown, Quote, HardDrive, CircuitBoard, Leaf, Utensils, Hospital, CreditCard,
+  Github, Linkedin, Mail, Phone, MapPin, Download, ArrowUpRight, ArrowRight, Code2, Server, Database, Wrench, Brain, Sparkles, Rocket, Award, GraduationCap, Briefcase, ExternalLink, Send, Menu, X, Sun, Moon, Terminal, Layers, Cpu, Globe, Shield, Zap, Star, ChevronDown, Quote, HardDrive, CircuitBoard, Leaf, Utensils, Hospital, CreditCard, CheckCircle2,
 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { sendToWhatsApp } from "@/lib/whatsapp-integration.server";
-import resumeAsset from "@/assets/resume.pdf.asset.json";
+import { sendContactNotification } from "@/lib/contact-notification";
 import { PublicComments } from "@/components/PublicComments";
 import { usePortfolioData } from "@/hooks/usePortfolioData";
 
 export const Route = createFileRoute("/")({ component: PortfolioPage });
 
 /* ============================================================
+   VIEWPORT VIDEO COMPONENT
+   ============================================================ */
+export function ViewportVideo({ src, className }: { src: string, className?: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            videoRef.current?.play().catch(e => console.log("Autoplay prevented", e));
+          } else {
+            videoRef.current?.pause();
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    if (videoRef.current) {
+      observer.observe(videoRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <video 
+      ref={videoRef}
+      src={src} 
+      className={className} 
+      muted 
+      playsInline 
+      loop 
+    />
+  );
+}
+
+/* ============================================================
    DATA (from resume)
    ============================================================ */
 // Fallback constants used if Supabase fetch fails or hasn't been seeded yet
-const FALLBACK_RESUME_URL = resumeAsset.url;
 const FALLBACK_EMAIL = "ganeshkaithoju4685@gmail.com";
 const FALLBACK_PHONE_DISPLAY = "+91 93923 79339";
 const FALLBACK_PHONE_TEL = "+919392379339";
@@ -270,19 +309,58 @@ function PortfolioPage() {
       <Navbar navOpen={menuOpen} setNavOpen={setMenuOpen} dark={dark} setDark={setDark} />
 
       <main id="main">
-        <Hero />
-        <MarqueeStrip />
-        <About />
-        <Stats />
-        <Experience />
-        <Skills />
-        <Projects />
-        <Timeline />
-        <Services />
-        <WhyHire />
-        <Certifications />
-        <Contact />
-        <PublicComments />
+        {(() => {
+          const { sections } = usePortfolioData();
+          
+          const sectionRegistry: Record<string, React.FC> = {
+            hero: Hero,
+            marquee: MarqueeStrip,
+            about: About,
+            stats: Stats,
+            experience: Experience,
+            education: Education,
+            skills: Skills,
+            projects: Projects,
+            timeline: Timeline,
+            services: Services,
+            "why-hire": WhyHire,
+            certifications: Certifications,
+            contact: Contact,
+            comments: PublicComments
+          };
+
+          const defaultOrder = ["hero", "marquee", "about", "stats", "experience", "education", "skills", "projects", "timeline", "services", "why-hire", "certifications", "contact", "comments"];
+
+          let sectionsToRender = defaultOrder.map(id => ({ id, is_visible: true, display_order: defaultOrder.indexOf(id) }));
+
+          if (sections && sections.length > 0) {
+            // Merge DB sections with defaults
+            sectionsToRender = defaultOrder.map(id => {
+              const dbSec = sections.find((s: any) => s.id === id);
+              if (dbSec) {
+                return { id, is_visible: dbSec.is_visible, display_order: dbSec.display_order };
+              }
+              return { id, is_visible: true, display_order: defaultOrder.indexOf(id) };
+            });
+            
+            // Add any sections from DB that aren't in defaultOrder (just in case)
+            sections.forEach((dbSec: any) => {
+              if (!defaultOrder.includes(dbSec.id) && sectionRegistry[dbSec.id]) {
+                sectionsToRender.push({ id: dbSec.id, is_visible: dbSec.is_visible, display_order: dbSec.display_order });
+              }
+            });
+
+            // Sort by display order
+            sectionsToRender.sort((a, b) => a.display_order - b.display_order);
+          }
+
+          return sectionsToRender
+            .filter(s => s.is_visible)
+            .map(s => {
+              const Component = sectionRegistry[s.id];
+              return Component ? <Component key={s.id} /> : null;
+            });
+        })()}
       </main>
 
       <Footer />
@@ -295,6 +373,12 @@ function PortfolioPage() {
    ============================================================ */
 function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setNavOpen: (v: boolean) => void; dark: boolean; setDark: (v: boolean) => void }) {
   const [scrolled, setScrolled] = useState(false);
+  const { navigation } = usePortfolioData();
+  
+  // Use DB navigation if available and has visible items, otherwise fallback
+  const dbNav = navigation?.filter(n => n.is_visible).sort((a, b) => a.display_order - b.display_order);
+  const activeNav = dbNav && dbNav.length > 0 ? dbNav : NAV;
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
@@ -308,8 +392,8 @@ function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setN
           <span className="hidden font-display text-sm font-semibold sm:inline">Ganesh Kaithoju</span>
         </button>
         <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
-          {NAV.map((n) => (
-            <a key={n.href} href={n.href} className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">{n.label}</a>
+          {activeNav.map((n: any) => (
+            <a key={n.path || n.href} href={n.path || n.href} className="rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">{n.label}</a>
           ))}
         </nav>
         <div className="flex items-center gap-2">
@@ -326,8 +410,8 @@ function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setN
         {navOpen && (
           <motion.div id="mobile-nav" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed inset-x-4 top-20 z-40 glass-strong rounded-2xl p-4 md:hidden">
             <nav aria-label="Mobile" className="flex flex-col">
-              {NAV.map((n) => (
-                <a key={n.href} href={n.href} onClick={() => setNavOpen(false)} className="rounded-lg px-4 py-3 text-sm hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">{n.label}</a>
+              {activeNav.map((n: any) => (
+                <a key={n.path || n.href} href={n.path || n.href} onClick={() => setNavOpen(false)} className="rounded-lg px-4 py-3 text-sm hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">{n.label}</a>
               ))}
             </nav>
           </motion.div>
@@ -389,7 +473,7 @@ function Hero() {
   const linkedinUrl = siteSettings?.linkedin_url || FALLBACK_LINKEDIN;
   const githubUrl = siteSettings?.github_url || FALLBACK_GITHUB;
   const email = siteSettings?.email || FALLBACK_EMAIL;
-  const resumeUrl = siteSettings?.resume_url || FALLBACK_RESUME_URL;
+  const resumeUrl = siteSettings?.resume_url || "#";
   
   const codeCard = siteSettings?.hero_code_card || {
     name: "Kaithoju Ganesh",
@@ -419,9 +503,15 @@ function Hero() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.85 }} className="mt-8 flex flex-wrap items-center gap-3">
             <MagneticButton href="#projects">View my work <ArrowUpRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></MagneticButton>
             <MagneticButton href="#contact" variant="ghost">Get in touch <ArrowRight aria-hidden="true" className="h-4 w-4" /></MagneticButton>
-            <a href={resumeUrl} download="Ganesh_Kaithoju_Resume.pdf" rel="noopener" className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
-              <Download aria-hidden="true" className="h-4 w-4" /> Download Resume
-            </a>
+            {resumeUrl ? (
+              <a href={`${resumeUrl}?download=`} download="Ganesh_Kaithoju_Resume.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+                <Download aria-hidden="true" className="h-4 w-4" /> Download Resume
+              </a>
+            ) : (
+              <span className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm text-muted-foreground/50 cursor-not-allowed" title="Resume not available">
+                <Download aria-hidden="true" className="h-4 w-4" /> Resume Unavailable
+              </span>
+            )}
           </motion.div>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 2 }} className="mt-10 flex items-center gap-5 text-muted-foreground">
             <a aria-label="LinkedIn profile" href={linkedinUrl} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Linkedin aria-hidden="true" className="h-5 w-5" /></a>
@@ -466,17 +556,22 @@ function Hero() {
 }
 
 function MarqueeStrip() {
-  const { marquee } = usePortfolioData();
+  const { marquee, sections } = usePortfolioData();
   const items = marquee?.length ? marquee : MARQUEE;
 
+  const section = sections?.find(s => s.id === 'marquee');
+  if (sections && section && !section.is_visible) return null;
+
   return (
-    <div aria-hidden="true" className="relative my-12 overflow-hidden border-y border-border/60 py-6">
-      <div className="flex animate-marquee whitespace-nowrap">
-        {[...items, ...items].map((t, i) => (
-          <span key={i} className="mx-8 font-display text-2xl font-medium text-muted-foreground sm:text-3xl">
-            <span className="text-gradient">✦</span> {t}
-          </span>
-        ))}
+    <div aria-hidden="true" className="relative my-12 overflow-hidden py-6">
+      <div className="mx-auto max-w-6xl border-y border-border/60 py-6 overflow-hidden">
+        <div className="flex animate-marquee whitespace-nowrap">
+          {[...items, ...items, ...items, ...items].map((t, i) => (
+            <span key={i} className="mx-8 font-display text-2xl font-medium text-muted-foreground sm:text-3xl">
+              <span className="text-gradient">✦</span> {t}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -486,7 +581,10 @@ function MarqueeStrip() {
    ABOUT
    ============================================================ */
 function About() {
-  const { siteSettings } = usePortfolioData();
+  const { siteSettings, sections } = usePortfolioData();
+  const section = sections?.find(s => s.id === 'about');
+  if (sections && section && !section.is_visible) return null;
+
   const focus = siteSettings?.about_focus_areas?.length ? siteSettings.about_focus_areas : ["Full-Stack Development", "Backend & APIs", "Database Design", "Embedded / IoT", "Python Automation", "Data Structures & OOP"];
   const paragraphs = siteSettings?.about_paragraphs?.length ? siteSettings.about_paragraphs : [
     "I'm Kaithoju Ganesh, an aspiring Software & Full-Stack Developer pursuing my B.Tech in Electronics & Communication Engineering at Narasimha Reddy Engineering College.",
@@ -498,7 +596,11 @@ function About() {
   return (
     <section id="about" aria-labelledby="about-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading id="about-title" eyebrow="About" title={<>Passionate about <span className="text-gradient">building software that matters</span></>} />
+        <SectionHeading 
+          id="about-title" 
+          eyebrow={section?.title || "About"} 
+          title={section?.subtitle ? <>{section.subtitle}</> : <>Passionate about <span className="text-gradient">building software that matters</span></>} 
+        />
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="space-y-5 text-lg leading-relaxed text-muted-foreground">
             {paragraphs.map((p, i) => <p key={i} dangerouslySetInnerHTML={{ __html: p }} />)}
@@ -521,8 +623,11 @@ function About() {
    STATS
    ============================================================ */
 function Stats() {
-  const { achievements } = usePortfolioData();
+  const { achievements, sections } = usePortfolioData();
   const items = achievements?.length ? achievements : ACHIEVEMENTS;
+
+  const section = sections?.find(s => s.id === 'achievements');
+  if (sections && section && !section.is_visible) return null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -544,7 +649,7 @@ function Stats() {
    EXPERIENCE
    ============================================================ */
 function Experience() {
-  const { experience, education } = usePortfolioData();
+  const { experience, sections } = usePortfolioData();
 
   const fallbackRoles = [
     {
@@ -589,19 +694,19 @@ function Experience() {
     },
   ];
 
-  const fallbackEducation = [
-    { title: "B.Tech — Electronics & Communication", institution: "Narasimha Reddy Engineering College · 2022 – 2026", score: "CGPA 8.42 / 10" },
-    { title: "Intermediate", institution: "Trinity Junior College, Karimnagar · 2020 – 2022", score: "83.9%" },
-    { title: "SSC", institution: "Z.P.H.S Chimanpally, Nizamabad · 2019 – 2020", score: "CGPA 10 / 10" },
-  ];
-
   const roles = experience?.length ? experience : fallbackRoles;
-  const eduItems = education?.length ? education : fallbackEducation;
+
+  const section = sections?.find(s => s.id === 'experience');
+  if (sections && section && !section.is_visible) return null;
 
   return (
     <section id="experience" aria-labelledby="experience-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading id="experience-title" eyebrow="Experience" title={<>Where I've been <span className="text-gradient">learning &amp; shipping</span></>} />
+        <SectionHeading 
+          id="experience-title" 
+          eyebrow={section?.title || "Experience"} 
+          title={section?.subtitle ? <>{section.subtitle}</> : <>Where I've been <span className="text-gradient">learning &amp; shipping</span></>} 
+        />
         <div className="space-y-6">
           {roles.map((r, i) => (
             <motion.article key={r.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: i * 0.05 }} className="relative overflow-hidden card-premium p-8 sm:p-10">
@@ -634,8 +739,36 @@ function Experience() {
             </motion.article>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
 
-        {/* Education */}
+/* ============================================================
+   EDUCATION
+   ============================================================ */
+function Education() {
+  const { education, sections } = usePortfolioData();
+
+  const fallbackEducation = [
+    { title: "B.Tech — Electronics & Communication", institution: "Narasimha Reddy Engineering College · 2022 – 2026", score: "CGPA 8.42 / 10" },
+    { title: "Intermediate", institution: "Trinity Junior College, Karimnagar · 2020 – 2022", score: "83.9%" },
+    { title: "SSC", institution: "Z.P.H.S Chimanpally, Nizamabad · 2019 – 2020", score: "CGPA 10 / 10" },
+  ];
+
+  const eduItems = education?.length ? education : fallbackEducation;
+
+  const section = sections?.find(s => s.id === 'education');
+  if (sections && section && !section.is_visible) return null;
+
+  return (
+    <section id="education" aria-labelledby="education-title" className="relative px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <SectionHeading 
+          id="education-title" 
+          eyebrow={section?.title || "Education"} 
+          title={section?.subtitle ? <>{section.subtitle}</> : <>My <span className="text-gradient">academic journey</span></>} 
+        />
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
           {eduItems.map((e) => (
             <div key={e.title} className="card-premium p-6">
@@ -657,13 +790,20 @@ function Experience() {
    SKILLS
    ============================================================ */
 function Skills() {
-  const { skills } = usePortfolioData();
+  const { skills, sections } = usePortfolioData();
   const items = skills?.length ? skills : SKILLS;
+
+  const section = sections?.find(s => s.id === 'skills');
+  if (sections && section && !section.is_visible) return null;
 
   return (
     <section id="skills" aria-labelledby="skills-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading id="skills-title" eyebrow="Skills" title={<>My <span className="text-gradient">technical toolbox</span></>} subtitle="Languages, frameworks, and hardware I use to ship real software." />
+        <SectionHeading 
+          id="skills-title" 
+          eyebrow={section?.title || "Skills"} 
+          title={section?.subtitle ? <>{section.subtitle}</> : <>My <span className="text-gradient">technical toolbox</span></>} 
+        />
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {items.map((s, gi) => (
             <motion.div key={s.group} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: gi * 0.05 }} whileHover={{ y: -6 }} className="card-premium group relative overflow-hidden p-6">
@@ -699,24 +839,42 @@ function Skills() {
    PROJECTS
    ============================================================ */
 function Projects() {
-  const { projects, siteSettings } = usePortfolioData();
+  const { projects, siteSettings, sections } = usePortfolioData();
   const items = projects?.length ? projects : PROJECTS;
   const githubUrl = siteSettings?.github_url || FALLBACK_GITHUB;
+
+  const section = sections?.find(s => s.id === 'projects');
+  if (sections && section && !section.is_visible) return null;
 
   return (
     <section id="projects" aria-labelledby="projects-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading id="projects-title" eyebrow="Projects" title={<>Selected <span className="text-gradient">work</span></>} subtitle="A handful of things I've designed, built, and shipped." />
+        <SectionHeading 
+          id="projects-title" 
+          eyebrow={section?.title || "Projects"} 
+          title={section?.subtitle ? <>{section.subtitle}</> : <>Selected <span className="text-gradient">work</span></>} 
+          subtitle="A handful of things I've designed, built, and shipped."
+        />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {items.map((p, i) => (
             <motion.article key={p.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.06 }} whileHover={{ y: -8 }} className="card-premium group relative flex flex-col overflow-hidden">
               <div aria-hidden="true" className={`relative aspect-[16/9] overflow-hidden bg-gradient-to-br ${p.accent}`}>
-                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-                <div className="absolute inset-0 grid place-items-center">
-                  <div className="glass-strong grid h-20 w-20 place-items-center rounded-2xl">
-                    <p.icon className="h-9 w-9 text-white/95" />
-                  </div>
-                </div>
+                {p.image_url ? (
+                  p.media_type === 'video' ? (
+                    <ViewportVideo src={p.image_url} className="absolute inset-0 h-full w-full object-cover mix-blend-overlay opacity-80" />
+                  ) : (
+                    <img src={p.image_url} alt={p.title} className="absolute inset-0 h-full w-full object-cover mix-blend-overlay opacity-80" />
+                  )
+                ) : (
+                  <>
+                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+                    <div className="absolute inset-0 grid place-items-center">
+                      <div className="glass-strong grid h-20 w-20 place-items-center rounded-2xl">
+                        {p.icon && <p.icon className="h-9 w-9 text-white/95" />}
+                      </div>
+                    </div>
+                  </>
+                )}
                 <span className="absolute left-4 top-4 rounded-full glass-strong px-3 py-1 text-xs">{p.tag}</span>
               </div>
               <div className="flex flex-1 flex-col p-6">
@@ -748,13 +906,20 @@ function Projects() {
    TIMELINE
    ============================================================ */
 function Timeline() {
-  const { timeline } = usePortfolioData();
+  const { timeline, sections } = usePortfolioData();
   const items = timeline?.length ? timeline : TIMELINE;
+
+  const section = sections?.find(s => s.id === 'timeline');
+  if (sections && section && !section.is_visible) return null;
 
   return (
     <section id="timeline" aria-labelledby="timeline-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-4xl">
-        <SectionHeading id="timeline-title" eyebrow="Timeline" title={<>The <span className="text-gradient">journey so far</span></>} />
+        <SectionHeading 
+          id="timeline-title" 
+          eyebrow={section?.title || "Timeline"} 
+          title={section?.subtitle ? <>{section.subtitle}</> : <>The <span className="text-gradient">journey so far</span></>} 
+        />
         <ol className="relative list-none">
           <div aria-hidden="true" className="absolute left-4 top-0 h-full w-px bg-gradient-to-b from-primary/60 via-primary/20 to-transparent md:left-1/2 md:-translate-x-1/2" />
           {items.map((t, i) => {
@@ -785,13 +950,21 @@ function Timeline() {
    SERVICES
    ============================================================ */
 function Services() {
-  const { services } = usePortfolioData();
+  const { services, sections } = usePortfolioData();
   const items = services?.length ? services : SERVICES;
+
+  const section = sections?.find(s => s.id === 'services');
+  if (sections && section && !section.is_visible) return null;
 
   return (
     <section id="services" aria-labelledby="services-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading id="services-title" eyebrow="Services" title={<>How I can <span className="text-gradient">help</span></>} subtitle="From landing pages to full products and hardware prototypes." />
+        <SectionHeading 
+          id="services-title" 
+          eyebrow={section?.title || "Services"} 
+          title={section?.subtitle ? <>{section.subtitle}</> : <>How I can <span className="text-gradient">help</span></>} 
+          subtitle="From landing pages to full products and hardware prototypes."
+        />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {items.map((s, i) => (
             <motion.div key={s.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.04 }} whileHover={{ y: -6 }} className="card-premium group relative overflow-hidden p-6">
@@ -812,13 +985,20 @@ function Services() {
    WHY HIRE
    ============================================================ */
 function WhyHire() {
-  const { whyHire } = usePortfolioData();
+  const { whyHire, sections } = usePortfolioData();
   const items = whyHire?.length ? whyHire : WHY_HIRE;
+
+  const section = sections?.find(s => s.id === 'why-hire');
+  if (sections && section && !section.is_visible) return null;
 
   return (
     <section aria-labelledby="why-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading id="why-title" eyebrow="Why hire me" title={<>Reasons I might be a <span className="text-gradient">good fit</span></>} />
+        <SectionHeading 
+          id="why-title" 
+          eyebrow={section?.title || "Why hire me"} 
+          title={section?.subtitle ? <>{section.subtitle}</> : <>Reasons I might be a <span className="text-gradient">good fit</span></>} 
+        />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {items.map((w, i) => (
             <motion.div key={w.title} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.04 }} className="card-premium p-5">
@@ -837,23 +1017,47 @@ function WhyHire() {
    CERTIFICATIONS
    ============================================================ */
 function Certifications() {
-  const { certifications } = usePortfolioData();
+  const { certifications, sections } = usePortfolioData();
   const items = certifications?.length ? certifications : CERTIFICATIONS;
+
+  const section = sections?.find(s => s.id === 'certifications');
+  if (sections && section && !section.is_visible) return null;
 
   return (
     <section aria-labelledby="certs-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-4xl">
-        <SectionHeading id="certs-title" eyebrow="Certifications" title={<>Credentials &amp; <span className="text-gradient">learning</span></>} />
+        <SectionHeading 
+          id="certs-title" 
+          eyebrow={section?.title || "Certifications"} 
+          title={section?.subtitle ? <>{section.subtitle}</> : <>Credentials &amp; <span className="text-gradient">learning</span></>} 
+        />
         <ul className="grid grid-cols-1 gap-5 list-none">
-          {items.map((c, i) => (
-            <motion.li key={c.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.05 }} className="card-premium flex items-center gap-5 p-6">
-              <div aria-hidden="true" className="grid h-14 w-14 shrink-0 place-items-center rounded-xl" style={{ background: "var(--gradient-text)" }}>
-                <c.icon className="h-6 w-6 text-primary-foreground" />
+          {items.map((c: any, i: number) => (
+            <motion.li key={c.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.05 }} className="card-premium flex flex-col sm:flex-row sm:items-center gap-5 p-6">
+              <div className="flex items-center gap-5 flex-1">
+                {c.image_url ? (
+                  <div aria-hidden="true" className="shrink-0 h-16 w-16 overflow-hidden rounded-xl border border-white/10 bg-black/40">
+                    {c.media_type === 'video' ? (
+                      <ViewportVideo src={c.image_url} className="h-full w-full object-cover" />
+                    ) : (
+                      <img src={c.image_url} alt={c.title} className="h-full w-full object-cover" />
+                    )}
+                  </div>
+                ) : (
+                  <div aria-hidden="true" className="grid h-14 w-14 shrink-0 place-items-center rounded-xl" style={{ background: "var(--gradient-text)" }}>
+                    <c.icon className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                )}
+                <div>
+                  <h3 className="font-display text-lg font-semibold">{c.title || c.name}</h3>
+                  <p className="text-sm text-muted-foreground">{c.platform || c.issuer} · Issued {c.date}</p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-display text-lg font-semibold">{c.title}</h3>
-                <p className="text-sm text-muted-foreground">{c.platform} · Issued {c.date}</p>
-              </div>
+              {c.url && (
+                <a href={c.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded mt-2 sm:mt-0" aria-label={`View ${c.title} credential`}>
+                  View Credential <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
+                </a>
+              )}
             </motion.li>
           ))}
         </ul>
@@ -873,20 +1077,25 @@ const contactSchema = z.object({
 });
 
 function Contact() {
-  const { siteSettings } = usePortfolioData();
+  const { siteSettings, sections } = usePortfolioData();
   const email = siteSettings?.email || FALLBACK_EMAIL;
   const phoneDisplay = siteSettings?.phone_display || FALLBACK_PHONE_DISPLAY;
   const phoneTel = siteSettings?.phone_tel || FALLBACK_PHONE_TEL;
   const linkedinUrl = siteSettings?.linkedin_url || FALLBACK_LINKEDIN;
-  const resumeUrl = siteSettings?.resume_url || FALLBACK_RESUME_URL;
+  const resumeUrl = siteSettings?.resume_url;
+
+  const section = sections?.find(s => s.id === 'contact');
+  if (sections && section && !section.is_visible) return null;
 
   const [submitting, setSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof z.infer<typeof contactSchema>, string>>>({});
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = e.currentTarget;
     setErrors({});
-    const fd = new FormData(e.currentTarget);
+    const fd = new FormData(form);
     const payload = {
       name: String(fd.get("name") ?? ""),
       email: String(fd.get("email") ?? ""),
@@ -906,21 +1115,26 @@ function Contact() {
     }
     setSubmitting(true);
     try {
-      // Store in Supabase
-      const { error } = await supabase.from("messages").insert(parsed.data);
+      // Store in Supabase contact_messages table
+      const { error } = await supabase.from("contact_messages").insert({
+        name: parsed.data.name,
+        email: parsed.data.email,
+        subject: parsed.data.subject,
+        message: parsed.data.message,
+        status: "pending",
+        is_pinned: false,
+        is_featured: false,
+      });
       if (error) throw error;
 
-      // Send to WhatsApp Cloud API via Google Apps Script
+      // Send real-time notification to owner via Google Apps Script (if configured)
       const gasUrl = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL;
-      if (gasUrl) {
-        const whatsappResult = await sendToWhatsApp(parsed.data, gasUrl);
-        if (!whatsappResult.success) {
-          console.warn("WhatsApp notification failed:", whatsappResult.error);
-        }
+      if (gasUrl && typeof gasUrl === "string" && gasUrl.trim().length > 0) {
+        sendContactNotification(parsed.data, gasUrl);
       }
 
-      toast.success("Thank you for sending message. I appreciate your time and efforts. I have successfully received your message");
-      (e.currentTarget as HTMLFormElement).reset();
+      form.reset();
+      setShowSuccessModal(true);
     } catch (err) {
       console.error("Contact submission failed", err);
       toast.error("There is a failure occurred while sharing your message, please try after some time");
@@ -932,7 +1146,12 @@ function Contact() {
   return (
     <section id="contact" aria-labelledby="contact-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <SectionHeading id="contact-title" eyebrow="Contact" title={<>Let's build <span className="text-gradient">something great</span></>} subtitle="Have a project, a role, or just want to say hi? My inbox is open." />
+        <SectionHeading 
+          id="contact-title" 
+          eyebrow={section?.title || "Contact"} 
+          title={section?.subtitle ? <>{section.subtitle}</> : <>Let's build <span className="text-gradient">something great</span></>} 
+          subtitle="Have a project, a role, or just want to say hi? My inbox is open." 
+        />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
           <div className="space-y-4">
             {[
@@ -940,8 +1159,8 @@ function Contact() {
               { icon: Phone, label: "Phone", value: phoneDisplay, href: `tel:${phoneTel}` },
               { icon: MapPin, label: "Location", value: "Hyderabad, Telangana, India", href: "https://www.google.com/maps/place/Hyderabad" },
               { icon: Linkedin, label: "LinkedIn", value: "/in/ganesh-kaithoju", href: linkedinUrl },
-              { icon: Download, label: "Resume", value: "Download PDF", href: resumeUrl },
-            ].map((c) => (
+              resumeUrl ? { icon: Download, label: "Resume", value: "Download PDF", href: `${resumeUrl}?download=` } : null,
+            ].filter(Boolean).map((c: any) => (
               <a key={c.label} href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel={c.href.startsWith("http") ? "noreferrer" : undefined} className="card-premium group flex items-center gap-4 p-5 transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
                 <div aria-hidden="true" className="grid h-11 w-11 place-items-center rounded-xl glass"><c.icon className="h-5 w-5 text-primary" /></div>
                 <div>
@@ -966,6 +1185,101 @@ function Contact() {
           </motion.form>
         </div>
       </div>
+
+      {/* Animated Success Popup Modal */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contact-success-title"
+          >
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSuccessModal(false)}
+              className="fixed inset-0 bg-black/75 backdrop-blur-md"
+            />
+
+            {/* Modal Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 20 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-10 mx-auto flex w-full max-w-md flex-col items-center rounded-3xl border border-white/10 bg-[oklch(0.16_0.02_260)]/95 p-8 text-center shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] backdrop-blur-2xl"
+            >
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setShowSuccessModal(false)}
+                className="absolute top-4 right-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                aria-label="Close success popup"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {/* Glowing Icon Container */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 320, damping: 18, delay: 0.1 }}
+                className="relative mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-primary/20 text-primary shadow-[0_0_50px_oklch(0.85_0.18_165/0.4)]"
+              >
+                <span className="absolute inset-0 rounded-full bg-primary/30 animate-ping opacity-40" />
+                <CheckCircle2 className="relative h-10 w-10 text-primary" />
+              </motion.div>
+
+              {/* Large "Success" text */}
+              <motion.h3
+                id="contact-success-title"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground"
+              >
+                <span className="text-gradient">Success</span>
+              </motion.h3>
+
+              {/* "message sent successfully" subtext */}
+              <motion.p
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-2 text-base sm:text-lg font-medium text-foreground/90"
+              >
+                Message sent successfully
+              </motion.p>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.25 }}
+                className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xs"
+              >
+                Thank you for reaching out! A confirmation email has been sent to your email address, and I will get back to you as soon as possible.
+              </motion.p>
+
+              {/* Done Button */}
+              <motion.button
+                type="button"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowSuccessModal(false)}
+                className="mt-6 inline-flex items-center justify-center rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground shadow-lg hover:shadow-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 transition-all"
+              >
+                Done
+              </motion.button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
@@ -998,7 +1312,7 @@ function Footer() {
   const linkedinUrl = siteSettings?.linkedin_url || FALLBACK_LINKEDIN;
   const githubUrl = siteSettings?.github_url || FALLBACK_GITHUB;
   const email = siteSettings?.email || FALLBACK_EMAIL;
-  const resumeUrl = siteSettings?.resume_url || FALLBACK_RESUME_URL;
+  const resumeUrl = siteSettings?.resume_url;
 
   return (
     <footer className="relative border-t border-border/60 px-4 py-10 sm:px-6">
@@ -1014,7 +1328,7 @@ function Footer() {
           <a aria-label="LinkedIn" href={linkedinUrl} target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Linkedin aria-hidden="true" className="h-5 w-5" /></a>
           <a aria-label="GitHub" href={githubUrl} target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Github aria-hidden="true" className="h-5 w-5" /></a>
           <a aria-label="Email" href={`mailto:${email}`} className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Mail aria-hidden="true" className="h-5 w-5" /></a>
-          <a aria-label="Download resume" href={resumeUrl} download="Ganesh_Kaithoju_Resume.pdf" rel="noopener" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Download aria-hidden="true" className="h-5 w-5" /></a>
+          {resumeUrl && <a aria-label="Download resume" href={`${resumeUrl}?download=`} download="Ganesh_Kaithoju_Resume.pdf" target="_blank" rel="noopener noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Download aria-hidden="true" className="h-5 w-5" /></a>}
         </nav>
         <div className="text-center text-xs text-muted-foreground md:text-right">
           <div>© {new Date().getFullYear()} Kaithoju Ganesh. All rights reserved.</div>
