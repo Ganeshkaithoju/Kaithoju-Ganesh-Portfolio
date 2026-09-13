@@ -118,6 +118,11 @@ export function ProjectsTab() {
         toast.error("Invalid video format. Please upload .mp4 or .webm");
         return;
       }
+
+      if (file.size > 50 * 1024 * 1024) {
+        toast.error(`File size is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Supabase limits files to 50MB. Please use the Media Library tab to optimize it below 50MB.`);
+        return;
+      }
       
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       const filePath = `projects/${fileName}`;
