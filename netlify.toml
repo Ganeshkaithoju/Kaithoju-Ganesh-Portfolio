@@ -1,0 +1,7 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Omit public client-side VITE_* variables and model/provider configuration strings from secret scanning
+  SECRETS_SCAN_OMIT_KEYS = "AI_MODEL,AI_PROVIDER,VITE_SUPABASE_PROJECT_ID,VITE_SUPABASE_PUBLISHABLE_KEY,VITE_SUPABASE_URL,VITE_GOOGLE_APPS_SCRIPT_URL"
