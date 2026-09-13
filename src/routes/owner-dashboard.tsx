@@ -143,7 +143,7 @@ function OwnerDashboard() {
       case "resume":
         return <ResumeTab />;
       case "sections":
-        return <SectionsTab />;
+        return <SectionsTab onNavigateTab={(tab) => setActiveTab(tab)} />;
       case "navigation":
         return <NavigationTab />;
       case "media":

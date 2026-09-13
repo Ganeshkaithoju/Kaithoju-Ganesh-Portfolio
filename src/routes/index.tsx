@@ -343,9 +343,9 @@ function PortfolioPage() {
               return { id, is_visible: true, display_order: defaultOrder.indexOf(id) };
             });
             
-            // Add any sections from DB that aren't in defaultOrder (just in case)
+            // Add any sections from DB that aren't in defaultOrder (custom sections added via CMS)
             sections.forEach((dbSec: any) => {
-              if (!defaultOrder.includes(dbSec.id) && sectionRegistry[dbSec.id]) {
+              if (!defaultOrder.includes(dbSec.id)) {
                 sectionsToRender.push({ id: dbSec.id, is_visible: dbSec.is_visible, display_order: dbSec.display_order });
               }
             });
@@ -358,13 +358,49 @@ function PortfolioPage() {
             .filter(s => s.is_visible)
             .map(s => {
               const Component = sectionRegistry[s.id];
-              return Component ? <Component key={s.id} /> : null;
+              if (Component) return <Component key={s.id} />;
+
+              const dbSec = sections?.find((sec: any) => sec.id === s.id);
+              return <CustomSection key={s.id} section={dbSec || s} />;
             });
         })()}
       </main>
 
       <Footer />
     </div>
+  );
+}
+
+/* ============================================================
+   CUSTOM DYNAMIC SECTION (Added via CMS)
+   ============================================================ */
+function CustomSection({ section }: { section: any }) {
+  if (!section || !section.is_visible) return null;
+  return (
+    <section id={section.id} aria-labelledby={`${section.id}-title`} className="relative px-4 py-24 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <SectionHeading
+          id={`${section.id}-title`}
+          eyebrow={section.title || "Section"}
+          title={section.subtitle ? <>{section.subtitle}</> : <><span className="text-gradient">{section.title}</span></>}
+        />
+        {section.content ? (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="card-premium p-8 sm:p-10 leading-relaxed text-muted-foreground whitespace-pre-wrap text-base sm:text-lg"
+          >
+            {section.content}
+          </motion.div>
+        ) : (
+          <div className="card-premium p-8 text-center text-muted-foreground">
+            <p>Content for this section can be edited in the Admin Dashboard under Website &gt; Sections.</p>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -540,10 +576,10 @@ function Hero() {
               ))}
             </div>
             <div className="absolute -right-4 -top-4 animate-float glass rounded-2xl px-3 py-2 text-xs">
-              <div className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> CGPA 8.42</div>
+              <div className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> CGPA {codeCard.cgpa !== undefined ? codeCard.cgpa : "8.42"}</div>
             </div>
             <div className="absolute -bottom-4 -left-4 animate-float glass rounded-2xl px-3 py-2 text-xs" style={{ animationDelay: "1.5s" }}>
-              <div className="flex items-center gap-1.5"><HardDrive className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> Backup &amp; Restore</div>
+              <div className="flex items-center gap-1.5"><HardDrive className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> {codeCard.badge_bottom || codeCard.role || "Backup & Restore"}</div>
             </div>
           </motion.div>
         </motion.div>
@@ -603,10 +639,10 @@ function About() {
         />
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="space-y-5 text-lg leading-relaxed text-muted-foreground">
-            {paragraphs.map((p, i) => <p key={i} dangerouslySetInnerHTML={{ __html: p }} />)}
+            {paragraphs.map((p: any, i: number) => <p key={i} dangerouslySetInnerHTML={{ __html: p }} />)}
           </motion.div>
           <motion.ul initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }} className="grid grid-cols-2 gap-4 list-none">
-            {focus.map((f, i) => (
+            {focus.map((f: any, i: number) => (
               <motion.li key={f} whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300 }} className="card-premium p-5">
                 <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg glass"><span className="font-mono text-xs text-primary">0{i + 1}</span></div>
                 <div className="font-display font-semibold">{f}</div>
@@ -814,7 +850,7 @@ function Skills() {
                   <h3 className="font-display text-lg font-semibold">{s.group}</h3>
                 </div>
                 <div className="space-y-3">
-                  {s.items.map((it) => (
+                  {s.items.map((it: any) => (
                     <div key={it.name} role="group" aria-label={`${it.name} proficiency ${it.level}%`}>
                       <div className="mb-1 flex justify-between text-xs">
                         <span className="text-foreground">{it.name}</span>
@@ -881,7 +917,7 @@ function Projects() {
                 <h3 className="font-display text-xl font-semibold">{p.title}</h3>
                 <p className="mt-2 flex-1 text-sm text-muted-foreground">{p.desc}</p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
-                  {p.tech.map((t) => (
+                  {p.tech?.map((t: any) => (
                     <span key={t} className="rounded-md bg-white/10 px-2 py-0.5 font-mono text-[11px] text-muted-foreground">{t}</span>
                   ))}
                 </div>
@@ -906,8 +942,8 @@ function Projects() {
    TIMELINE
    ============================================================ */
 function Timeline() {
-  const { timeline, sections } = usePortfolioData();
-  const items = timeline?.length ? timeline : TIMELINE;
+  const { sections } = usePortfolioData();
+  const items: any[] = [];
 
   const section = sections?.find(s => s.id === 'timeline');
   if (sections && section && !section.is_visible) return null;
@@ -922,7 +958,7 @@ function Timeline() {
         />
         <ol className="relative list-none">
           <div aria-hidden="true" className="absolute left-4 top-0 h-full w-px bg-gradient-to-b from-primary/60 via-primary/20 to-transparent md:left-1/2 md:-translate-x-1/2" />
-          {items.map((t, i) => {
+          {items.map((t: any, i: number) => {
             const left = i % 2 === 0;
             return (
               <motion.li key={t.year + t.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.05 * i }} className={`relative mb-10 flex flex-col md:flex-row ${left ? "md:justify-start" : "md:justify-end"}`}>

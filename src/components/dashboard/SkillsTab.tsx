@@ -120,6 +120,7 @@ export function SkillsTab() {
         .update({ is_visible: !currentVisibility })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Skill ${!currentVisibility ? "is now visible" : "hidden"} successfully`);
       fetchSkills();
     } catch (error: any) {
       console.error("Error toggling visibility:", error);

@@ -119,6 +119,7 @@ export function WhyHireTab() {
         .update({ is_visible: !currentVisibility })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Item ${!currentVisibility ? "is now visible" : "hidden"} successfully`);
       fetchReasons();
     } catch (error) {
       console.error("Error toggling visibility:", error);

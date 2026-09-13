@@ -198,6 +198,7 @@ export function ProjectsTab() {
         .update({ is_visible: !currentVisibility })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Project ${!currentVisibility ? "is now visible" : "hidden"} successfully`);
       fetchProjects();
     } catch (error: any) {
       console.error("Error toggling visibility:", error);
@@ -212,9 +213,10 @@ export function ProjectsTab() {
         .update({ featured: !currentFeatured })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Project ${!currentFeatured ? "marked as featured" : "unmarked as featured"}`);
       fetchProjects();
     } catch (error: any) {
-      console.error("Error toggling featured status:", error);
+      console.error("Error toggling featured:", error);
       toast.error(error.message || "Failed to update featured status");
     }
   }
@@ -256,7 +258,7 @@ export function ProjectsTab() {
                 </h3>
               </div>
               <div className="flex items-center gap-1">
-                {project.featured && <Star className="h-4 w-4 text-primary fill-primary" title="Featured Project" />}
+                {project.featured && <span title="Featured Project"><Star className="h-4 w-4 text-primary fill-primary" /></span>}
                 {!project.is_visible && <div className="h-2 w-2 rounded-full bg-red-500" title="Hidden" />}
               </div>
             </div>

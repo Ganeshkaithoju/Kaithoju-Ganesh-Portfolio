@@ -162,13 +162,13 @@ export function MediaTab() {
       await ffmpeg.exec(args);
       
       const data = await ffmpeg.readFile(outputName);
-      const blob = new Blob([data], { type: 'video/mp4' });
+      const blob = new Blob([data as any], { type: 'video/mp4' });
       
       const fileExt = videoToProcess.name.split('.').pop() || 'mp4';
       const baseName = videoToProcess.name.replace(`.${fileExt}`, '').replace(/[^a-zA-Z0-9]/g, '_');
       const finalName = `${baseName}_optimized.mp4`;
       
-      const newFile = new File([blob], finalName, { type: 'video/mp4' });
+      const newFile = new (window as any).File([blob], finalName, { type: 'video/mp4' });
       
       setProcessedFile({
         file: newFile,

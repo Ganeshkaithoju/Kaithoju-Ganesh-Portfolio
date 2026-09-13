@@ -144,6 +144,7 @@ export function ExperienceTab() {
         .update({ is_visible: !currentVisibility })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Experience ${!currentVisibility ? "is now visible" : "hidden"} successfully`);
       fetchExperiences();
     } catch (error) {
       console.error("Error toggling visibility:", error);

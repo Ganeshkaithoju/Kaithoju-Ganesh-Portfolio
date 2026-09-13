@@ -179,6 +179,7 @@ export function CertificationsTab() {
         .update({ is_visible: !currentVisibility })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Certification ${!currentVisibility ? "is now visible" : "hidden"} successfully`);
       fetchCertifications();
     } catch (error: any) {
       console.error("Error toggling visibility:", error);

@@ -125,6 +125,7 @@ export function EducationTab() {
         .update({ is_visible: !currentVisibility })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Education entry ${!currentVisibility ? "is now visible" : "hidden"} successfully`);
       fetchEducation();
     } catch (error) {
       console.error("Error toggling visibility:", error);

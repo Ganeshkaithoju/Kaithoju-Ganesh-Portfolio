@@ -125,6 +125,7 @@ export function AchievementsTab() {
         .update({ is_visible: !currentVisibility })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Achievement ${!currentVisibility ? "is now visible" : "hidden"} successfully`);
       fetchAchievements();
     } catch (error) {
       console.error("Error toggling visibility:", error);

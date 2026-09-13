@@ -122,6 +122,7 @@ export function NavigationTab() {
         .update({ is_visible: !currentVisibility })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Navigation link ${!currentVisibility ? "is now visible" : "hidden"} successfully`);
       fetchLinks();
     } catch (error) {
       console.error("Error toggling visibility:", error);

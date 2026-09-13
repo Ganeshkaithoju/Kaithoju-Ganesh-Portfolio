@@ -119,6 +119,7 @@ export function MarqueeTab() {
         .update({ is_visible: !currentVisibility })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Marquee item ${!currentVisibility ? "is now visible" : "hidden"} successfully`);
       fetchItems();
     } catch (error: any) {
       console.error("Error toggling visibility:", error);

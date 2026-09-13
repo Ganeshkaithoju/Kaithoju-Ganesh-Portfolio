@@ -122,6 +122,7 @@ export function ServicesTab() {
         .update({ is_visible: !currentVisibility })
         .eq('id', id);
       if (error) throw error;
+      toast.success(`Service ${!currentVisibility ? "is now visible" : "hidden"} successfully`);
       fetchServices();
     } catch (error) {
       console.error("Error toggling visibility:", error);

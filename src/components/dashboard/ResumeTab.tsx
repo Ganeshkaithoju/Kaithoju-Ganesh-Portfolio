@@ -39,7 +39,7 @@ export function ResumeTab() {
             setResumeInfo({
               name: file.name,
               size: file.metadata?.size || 0,
-              updated_at: file.updated_at
+              updated_at: file.updated_at || new Date().toISOString()
             });
           } else {
             // Fallback if metadata not found
