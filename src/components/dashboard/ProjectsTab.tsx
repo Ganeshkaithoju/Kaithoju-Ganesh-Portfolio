@@ -1,8 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { Plus, Edit2, Trash2, Loader2, Save, X, GripVertical, Image as ImageIcon, Video, Star } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, Save, X, GripVertical, Image as ImageIcon, Video, Star, AlertCircle, AlertTriangle, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
+
+function formatBytes(bytes: number, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
 
 interface Project {
   id: number;
@@ -41,6 +52,17 @@ export function ProjectsTab() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const watchImageUrl = watch("image_url");
   const watchMediaType = watch("media_type");
+
+  // In-place Video Optimization State
+  const [videoToProcess, setVideoToProcess] = useState<File | null>(null);
+  const [processedFile, setProcessedFile] = useState<{ file: File; originalSize: number } | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [processOptions, setProcessOptions] = useState({
+    removeAudio: false,
+    compress: true
+  });
+  const ffmpegRef = useRef<FFmpeg | null>(null);
 
   useEffect(() => {
     fetchProjects();
@@ -107,20 +129,160 @@ export function ProjectsTab() {
     reset();
   }
 
+  const loadFFmpeg = async () => {
+    if (ffmpegRef.current) return ffmpegRef.current;
+    
+    const ffmpeg = new FFmpeg();
+    ffmpegRef.current = ffmpeg;
+    
+    ffmpeg.on('progress', ({ progress }) => {
+      setProcessingProgress(Math.round(progress * 100));
+    });
+    
+    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+    await ffmpeg.load({
+      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+    });
+    
+    return ffmpeg;
+  };
+
+  async function processVideo() {
+    if (!videoToProcess) return;
+    
+    try {
+      setIsProcessing(true);
+      setProcessingProgress(0);
+      toast.loading("Initializing video processor...", { id: "project-video-process" });
+      
+      const ffmpeg = await loadFFmpeg();
+      toast.loading("Optimizing video in browser...", { id: "project-video-process" });
+      
+      const inputName = 'input' + (videoToProcess.name.match(/\.[^.]+$/)?.[0] || '.mp4');
+      const outputName = 'output.mp4';
+      
+      await ffmpeg.writeFile(inputName, await fetchFile(videoToProcess));
+      
+      const args = ['-i', inputName];
+      
+      if (processOptions.removeAudio) {
+        args.push('-an');
+      }
+      
+      args.push(
+        '-vcodec', 'libx264',
+        '-crf', '28',
+        '-preset', 'fast',
+        '-vf', "scale='min(1920,iw)':-2",
+        '-pix_fmt', 'yuv420p'
+      );
+      
+      args.push(outputName);
+      
+      await ffmpeg.exec(args);
+      
+      const data = await ffmpeg.readFile(outputName);
+      const blob = new Blob([data as any], { type: 'video/mp4' });
+      
+      const fileExt = videoToProcess.name.split('.').pop() || 'mp4';
+      const baseName = videoToProcess.name.replace(`.${fileExt}`, '').replace(/[^a-zA-Z0-9]/g, '_');
+      const finalName = `${baseName}_optimized.mp4`;
+      
+      const newFile = new (window as any).File([blob], finalName, { type: 'video/mp4' });
+      
+      setProcessedFile({
+        file: newFile,
+        originalSize: videoToProcess.size
+      });
+
+      if (newFile.size > 50 * 1024 * 1024) {
+        toast.warning(`Video processed, but size (${formatBytes(newFile.size)}) still exceeds Supabase's 50MB limit. Remove audio or pre-compress with Clipchamp/HandBrake.`, { id: "project-video-process", duration: 6000 });
+      } else {
+        toast.success("Optimization complete! Ready to attach to project.", { id: "project-video-process" });
+      }
+      
+    } catch (error) {
+      console.error("FFmpeg error:", error);
+      toast.error("Failed to process video. Consider compressing with Clipchamp or HandBrake.", { id: "project-video-process" });
+    } finally {
+      setIsProcessing(false);
+      setProcessingProgress(0);
+    }
+  }
+
+  async function executeProjectVideoUpload(file: File) {
+    try {
+      if (file.size > 50 * 1024 * 1024) {
+        toast.error(`File size (${formatBytes(file.size)}) exceeds Supabase's 50MB storage limit.`);
+        return;
+      }
+
+      setUploadingImage(true);
+      toast.loading("Uploading project video...", { id: "project-upload" });
+
+      const fileExt = file.name.split('.').pop() || 'mp4';
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `projects/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('portfolio-assets')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        if (uploadError.message.includes('exceeded')) {
+          throw new Error("File exceeded maximum allowed size configured on server (50MB).");
+        }
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('portfolio-assets')
+        .getPublicUrl(filePath);
+
+      setValue('image_url', data.publicUrl);
+      setValue('media_type', 'video');
+      toast.success("Project video optimized, uploaded and applied!", { id: "project-upload" });
+      setVideoToProcess(null);
+      setProcessedFile(null);
+    } catch (error: any) {
+      console.error("Error uploading video:", error);
+      toast.error(error.message || "Failed to upload video", { id: "project-upload" });
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
     try {
       if (!event.target.files || event.target.files.length === 0) return;
       
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop()?.toLowerCase();
+      const isVideo = watchMediaType === 'video' || file.type.startsWith('video/');
       
-      if (watchMediaType === 'video' && !['mp4', 'webm'].includes(fileExt || '')) {
-        toast.error("Invalid video format. Please upload .mp4 or .webm");
-        return;
+      if (isVideo) {
+        if (!['mp4', 'webm'].includes(fileExt || '')) {
+          toast.error("Invalid video format. Please upload .mp4 or .webm");
+          return;
+        }
+
+        if (file.size > 100 * 1024 * 1024) {
+          toast.error("Video exceeds 100MB. Please pre-compress using Clipchamp or HandBrake before uploading.");
+          return;
+        }
+
+        // If file is > 50MB, immediately trigger in-place video compressor popup
+        if (file.size > 50 * 1024 * 1024) {
+          setProcessOptions({ removeAudio: false, compress: true });
+          setVideoToProcess(file);
+          setProcessedFile(null);
+          return;
+        }
       }
 
       if (file.size > 50 * 1024 * 1024) {
-        toast.error(`File size is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Supabase limits files to 50MB. Please use the Media Library tab to optimize it below 50MB.`);
+        toast.error(`File size is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Supabase limits files to 50MB.`);
         return;
       }
       
@@ -140,10 +302,10 @@ export function ProjectsTab() {
         .getPublicUrl(filePath);
 
       setValue('image_url', data.publicUrl);
-      toast.success("Image uploaded successfully");
+      toast.success(`${isVideo ? 'Video' : 'Image'} uploaded successfully`);
     } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Failed to upload image");
+      console.error("Error uploading media:", error);
+      toast.error("Failed to upload media");
     } finally {
       setUploadingImage(false);
       if (fileInputRef.current) {
@@ -544,6 +706,153 @@ export function ProjectsTab() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {videoToProcess && (
+        <div className="fixed inset-0 z-[70] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-background border border-border/60 rounded-xl max-w-md w-full p-6 space-y-6 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-white/10">
+              {isProcessing && (
+                <div 
+                  className="h-full bg-primary transition-all duration-300 ease-out"
+                  style={{ width: `${processingProgress}%` }}
+                />
+              )}
+            </div>
+            
+            <div>
+              <h3 className="text-xl font-display font-semibold">Project Video Optimization</h3>
+              <p className="text-sm text-muted-foreground mt-1">Compress video before attaching to project.</p>
+            </div>
+            
+            <div className="p-4 bg-white/5 rounded-lg text-sm space-y-2 border border-white/10">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Original File:</span>
+                <span className="font-medium truncate max-w-[200px]" title={videoToProcess.name}>{videoToProcess.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Original Size:</span>
+                <span className="font-medium">{formatBytes(videoToProcess.size)}</span>
+              </div>
+              
+              {processedFile && (
+                <>
+                  <div className="h-px bg-white/10 my-2" />
+                  <div className="flex justify-between text-primary">
+                    <span>Processed Size:</span>
+                    <span className="font-medium">{formatBytes(processedFile.file.size)}</span>
+                  </div>
+                  <div className="flex justify-between text-green-400">
+                    <span>Space Saved:</span>
+                    <span className="font-medium">
+                      {Math.round(((processedFile.originalSize - processedFile.file.size) / processedFile.originalSize) * 100)}%
+                    </span>
+                  </div>
+
+                  {processedFile.file.size > 50 * 1024 * 1024 ? (
+                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-xs text-red-400 space-y-1 mt-2">
+                      <div className="font-semibold flex items-center gap-1.5">
+                        <AlertCircle className="h-4 w-4 shrink-0 text-red-400" /> Exceeds Supabase 50MB Limit
+                      </div>
+                      <p>
+                        Optimized size is <strong>{formatBytes(processedFile.file.size)}</strong>. Supabase blocks uploads larger than 50MB. Click "Change Settings" below to remove audio, or pre-compress with Clipchamp/HandBrake.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 flex items-center gap-2 mt-2">
+                      <Check className="h-4 w-4 shrink-0" />
+                      <span>Optimized under 50MB! 100% ready to attach to project.</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            
+            {!processedFile && (
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>This video is {formatBytes(videoToProcess.size)}. Web optimization will compress it below 50MB for project preview.</span>
+                </div>
+
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                  <input 
+                    type="checkbox" 
+                    checked={processOptions.removeAudio}
+                    onChange={(e) => setProcessOptions(prev => ({...prev, removeAudio: e.target.checked}))}
+                    className="rounded border-white/20 bg-black/50 text-primary focus:ring-primary/50"
+                  />
+                  <div>
+                    <div className="text-sm font-medium">Remove Audio Track</div>
+                    <div className="text-xs text-muted-foreground">Significantly reduces file size for project demo videos.</div>
+                  </div>
+                </label>
+                
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 transition-colors opacity-90">
+                  <input 
+                    type="checkbox" 
+                    checked={true}
+                    disabled={true}
+                    className="rounded border-white/20 bg-black/50 text-primary focus:ring-primary/50"
+                  />
+                  <div>
+                    <div className="text-sm font-medium flex items-center gap-2">
+                      Compress & Scale Video
+                      <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-mono">Required (&gt;50MB)</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Re-encodes with H.264 & 1080p scale to reduce size.</div>
+                  </div>
+                </label>
+              </div>
+            )}
+            
+            <div className="flex gap-3 justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setVideoToProcess(null);
+                  setProcessedFile(null);
+                }}
+                disabled={isProcessing || uploadingImage}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              
+              {!processedFile ? (
+                <button
+                  type="button"
+                  onClick={processVideo}
+                  disabled={isProcessing}
+                  className="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2 disabled:opacity-50"
+                >
+                  {isProcessing && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {isProcessing ? 'Optimizing Video...' : 'Optimize Video'}
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setProcessedFile(null)}
+                    disabled={uploadingImage}
+                    className="px-3 py-2 text-sm font-medium rounded-lg bg-white/10 hover:bg-white/15 transition-colors disabled:opacity-50"
+                  >
+                    Change Settings
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => executeProjectVideoUpload(processedFile.file)}
+                    disabled={uploadingImage || processedFile.file.size > 50 * 1024 * 1024}
+                    className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {uploadingImage && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {uploadingImage ? 'Uploading...' : processedFile.file.size > 50 * 1024 * 1024 ? 'Exceeds 50MB Limit' : 'Upload & Apply to Project'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
