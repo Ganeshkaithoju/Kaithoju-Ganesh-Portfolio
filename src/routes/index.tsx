@@ -10,18 +10,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { sendToWhatsApp } from "@/lib/whatsapp-integration.server";
 import resumeAsset from "@/assets/resume.pdf.asset.json";
 import { PublicComments } from "@/components/PublicComments";
+import { usePortfolioData } from "@/hooks/usePortfolioData";
 
 export const Route = createFileRoute("/")({ component: PortfolioPage });
 
 /* ============================================================
    DATA (from resume)
    ============================================================ */
-const RESUME_URL = resumeAsset.url;
-const EMAIL = "ganeshkaithoju4685@gmail.com";
-const PHONE_DISPLAY = "+91 93923 79339";
-const PHONE_TEL = "+919392379339";
-const LINKEDIN = "https://www.linkedin.com/in/ganesh-kaithoju";
-const GITHUB = "https://github.com/Ganeshkaithoju";
+// Fallback constants used if Supabase fetch fails or hasn't been seeded yet
+const FALLBACK_RESUME_URL = resumeAsset.url;
+const FALLBACK_EMAIL = "ganeshkaithoju4685@gmail.com";
+const FALLBACK_PHONE_DISPLAY = "+91 93923 79339";
+const FALLBACK_PHONE_TEL = "+919392379339";
+const FALLBACK_LINKEDIN = "https://www.linkedin.com/in/ganesh-kaithoju";
+const FALLBACK_GITHUB = "https://github.com/Ganeshkaithoju";
 
 const NAV = [
   { href: "#home", label: "Home" },
@@ -216,6 +218,8 @@ function PortfolioPage() {
   const cxs = useSpring(cx, { stiffness: 500, damping: 40 });
   const cys = useSpring(cy, { stiffness: 500, damping: 40 });
 
+  const { isLoading: dataLoading } = usePortfolioData();
+
   useEffect(() => {
     const onMove = (e: MouseEvent) => { cx.set(e.clientX); cy.set(e.clientY); };
     window.addEventListener("mousemove", onMove);
@@ -377,32 +381,52 @@ function MagneticButton({ children, href, variant = "primary", download, ariaLab
 }
 
 function Hero() {
+  const { siteSettings } = usePortfolioData();
+  
+  const heroName = siteSettings?.hero_name || "Ganesh";
+  const heroSubtitles = siteSettings?.hero_subtitles?.length ? siteSettings.hero_subtitles : ["full-stack web apps", "clean interfaces", "reliable systems", "IoT that ships"];
+  const heroBio = siteSettings?.hero_bio || "Aspiring Software & Full-Stack Developer working with HTML, CSS, JavaScript, React, Python, Java and Spring Boot. Currently interning on the Backup & Restore team at Lumen Technologies India.";
+  const linkedinUrl = siteSettings?.linkedin_url || FALLBACK_LINKEDIN;
+  const githubUrl = siteSettings?.github_url || FALLBACK_GITHUB;
+  const email = siteSettings?.email || FALLBACK_EMAIL;
+  const resumeUrl = siteSettings?.resume_url || FALLBACK_RESUME_URL;
+  
+  const codeCard = siteSettings?.hero_code_card || {
+    name: "Kaithoju Ganesh",
+    role: "Software & Full-Stack Dev",
+    stack: ["React", "Node", "Python", "Java", "Spring Boot", "MySQL"],
+    focus: "reliable · elegant · fast",
+    cgpa: 8.42,
+    now: "Intern @ Lumen — Backup & Restore",
+    shipping: true
+  };
+
   return (
     <section id="home" aria-labelledby="hero-title" className="relative flex min-h-dvh items-center px-4 pt-32 sm:px-6">
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
         <div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.4 }} className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs">
             <span aria-hidden="true" className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-primary" /></span>
-            Intern @ Lumen · Backup &amp; Restore · Bengaluru, IN
+            {codeCard.now}
           </motion.div>
           <motion.h1 id="hero-title" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.5 }} className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-[5.5rem]">
-            Hi, I'm <span className="text-gradient">Ganesh</span>.<br />
-            I build <TypingText words={["full-stack web apps", "clean interfaces", "reliable systems", "IoT that ships"]} />
+            Hi, I'm <span className="text-gradient">{heroName}</span>.<br />
+            I build <TypingText words={heroSubtitles} />
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.7 }} className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
-            Aspiring Software &amp; Full-Stack Developer working with HTML, CSS, JavaScript, React, Python, Java and Spring Boot. Currently interning on the <span className="text-foreground">Backup &amp; Restore team at Lumen Technologies India</span>.
+            {heroBio}
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.85 }} className="mt-8 flex flex-wrap items-center gap-3">
             <MagneticButton href="#projects">View my work <ArrowUpRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></MagneticButton>
             <MagneticButton href="#contact" variant="ghost">Get in touch <ArrowRight aria-hidden="true" className="h-4 w-4" /></MagneticButton>
-            <a href={RESUME_URL} download="Ganesh_Kaithoju_Resume.pdf" rel="noopener" className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+            <a href={resumeUrl} download="Ganesh_Kaithoju_Resume.pdf" rel="noopener" className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
               <Download aria-hidden="true" className="h-4 w-4" /> Download Resume
             </a>
           </motion.div>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 2 }} className="mt-10 flex items-center gap-5 text-muted-foreground">
-            <a aria-label="LinkedIn profile" href={LINKEDIN} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Linkedin aria-hidden="true" className="h-5 w-5" /></a>
-            <a aria-label="GitHub profile" href={GITHUB} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Github aria-hidden="true" className="h-5 w-5" /></a>
-            <a aria-label="Send email" href={`mailto:${EMAIL}`} className="transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Mail aria-hidden="true" className="h-5 w-5" /></a>
+            <a aria-label="LinkedIn profile" href={linkedinUrl} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Linkedin aria-hidden="true" className="h-5 w-5" /></a>
+            <a aria-label="GitHub profile" href={githubUrl} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Github aria-hidden="true" className="h-5 w-5" /></a>
+            <a aria-label="Send email" href={`mailto:${email}`} className="transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Mail aria-hidden="true" className="h-5 w-5" /></a>
             <div aria-hidden="true" className="ml-2 h-px w-16 bg-border" />
             <span aria-hidden="true" className="font-mono text-xs">scroll ↓</span>
           </motion.div>
@@ -416,16 +440,7 @@ function Hero() {
               <span className="font-mono">ganesh.tsx</span>
             </div>
             <pre className="mt-4 overflow-hidden font-mono text-[13px] leading-relaxed">
-{`const dev = {
-  name: "Kaithoju Ganesh",
-  role: "Software & Full-Stack Dev",
-  stack: ["React", "Node", "Python",
-          "Java", "Spring Boot", "MySQL"],
-  focus: "reliable · elegant · fast",
-  cgpa: 8.42,
-  now: "Intern @ Lumen — Backup & Restore",
-  shipping: true,
-};`}
+{`const dev = ${JSON.stringify(codeCard, null, 2)};`}
             </pre>
             <div className="mt-6 grid grid-cols-3 gap-3">
               {[Code2, Server, HardDrive].map((Icon, i) => (
@@ -451,10 +466,13 @@ function Hero() {
 }
 
 function MarqueeStrip() {
+  const { marquee } = usePortfolioData();
+  const items = marquee?.length ? marquee : MARQUEE;
+
   return (
     <div aria-hidden="true" className="relative my-12 overflow-hidden border-y border-border/60 py-6">
       <div className="flex animate-marquee whitespace-nowrap">
-        {[...MARQUEE, ...MARQUEE].map((t, i) => (
+        {[...items, ...items].map((t, i) => (
           <span key={i} className="mx-8 font-display text-2xl font-medium text-muted-foreground sm:text-3xl">
             <span className="text-gradient">✦</span> {t}
           </span>
@@ -468,17 +486,22 @@ function MarqueeStrip() {
    ABOUT
    ============================================================ */
 function About() {
-  const focus = ["Full-Stack Development", "Backend & APIs", "Database Design", "Embedded / IoT", "Python Automation", "Data Structures & OOP"];
+  const { siteSettings } = usePortfolioData();
+  const focus = siteSettings?.about_focus_areas?.length ? siteSettings.about_focus_areas : ["Full-Stack Development", "Backend & APIs", "Database Design", "Embedded / IoT", "Python Automation", "Data Structures & OOP"];
+  const paragraphs = siteSettings?.about_paragraphs?.length ? siteSettings.about_paragraphs : [
+    "I'm Kaithoju Ganesh, an aspiring Software & Full-Stack Developer pursuing my B.Tech in Electronics & Communication Engineering at Narasimha Reddy Engineering College.",
+    "I enjoy building dynamic, responsive, user-friendly applications — from React front-ends to Java / Spring Boot APIs and MySQL back-ends — and I'm equally at home with Arduino, NodeMCU and Embedded C.",
+    "Right now I'm an Intern on the Backup & Restore team at Lumen Technologies India, learning enterprise engineering practices and shipping alongside a real product team.",
+    "Outside of coursework I love turning ideas into working prototypes — automating irrigation, building assistive devices, and shipping full-stack side projects."
+  ];
+
   return (
     <section id="about" aria-labelledby="about-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <SectionHeading id="about-title" eyebrow="About" title={<>Passionate about <span className="text-gradient">building software that matters</span></>} />
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="space-y-5 text-lg leading-relaxed text-muted-foreground">
-            <p>I'm <span className="text-foreground">Kaithoju Ganesh</span>, an aspiring Software &amp; Full-Stack Developer pursuing my B.Tech in Electronics &amp; Communication Engineering at Narasimha Reddy Engineering College.</p>
-            <p>I enjoy building dynamic, responsive, user-friendly applications — from React front-ends to Java / Spring Boot APIs and MySQL back-ends — and I'm equally at home with Arduino, NodeMCU and Embedded C.</p>
-            <p>Right now I'm an <span className="text-foreground">Intern on the Backup &amp; Restore team at Lumen Technologies India</span>, learning enterprise engineering practices and shipping alongside a real product team.</p>
-            <p>Outside of coursework I love turning ideas into working prototypes — automating irrigation, building assistive devices, and shipping full-stack side projects.</p>
+            {paragraphs.map((p, i) => <p key={i} dangerouslySetInnerHTML={{ __html: p }} />)}
           </motion.div>
           <motion.ul initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }} className="grid grid-cols-2 gap-4 list-none">
             {focus.map((f, i) => (
@@ -498,10 +521,13 @@ function About() {
    STATS
    ============================================================ */
 function Stats() {
+  const { achievements } = usePortfolioData();
+  const items = achievements?.length ? achievements : ACHIEVEMENTS;
+
   return (
-    <section aria-label="Key numbers" className="px-4 py-12 sm:px-6">
-      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-4 md:grid-cols-4">
-        {ACHIEVEMENTS.map((s, i) => (
+    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div className="grid grid-cols-2 gap-4 rounded-3xl border border-border/60 bg-background/50 p-6 shadow-sm backdrop-blur-xl md:grid-cols-4 md:p-8">
+        {items.map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.08 }} className="card-premium p-6 text-center">
             <div className="font-display text-4xl font-bold text-gradient sm:text-5xl">
               <Counter to={s.value} suffix={s.suffix} />
@@ -510,7 +536,7 @@ function Stats() {
           </motion.div>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -518,13 +544,15 @@ function Stats() {
    EXPERIENCE
    ============================================================ */
 function Experience() {
-  const roles = [
+  const { experience, education } = usePortfolioData();
+
+  const fallbackRoles = [
     {
       title: "Intern — Backup & Restore",
       company: "Lumen Technologies India",
       period: "2026 — Present",
       location: "Bengaluru, IN",
-      current: true,
+      is_current: true,
       icon: HardDrive,
       bullets: [
         "Working with the Backup & Restore team on enterprise data-protection workflows",
@@ -538,7 +566,7 @@ function Experience() {
       company: "BHEL — Bharat Heavy Electricals Limited",
       period: "May 2025 — June 2025",
       location: "Hyderabad, IN",
-      current: false,
+      is_current: false,
       icon: Briefcase,
       bullets: [
         "Team member on a thermal power systems project",
@@ -551,7 +579,7 @@ function Experience() {
       company: "YBI Foundation",
       period: "March 2025 — April 2025",
       location: "Remote",
-      current: false,
+      is_current: false,
       icon: Terminal,
       bullets: [
         "Learned core Python concepts and standard libraries",
@@ -560,6 +588,16 @@ function Experience() {
       ],
     },
   ];
+
+  const fallbackEducation = [
+    { title: "B.Tech — Electronics & Communication", institution: "Narasimha Reddy Engineering College · 2022 – 2026", score: "CGPA 8.42 / 10" },
+    { title: "Intermediate", institution: "Trinity Junior College, Karimnagar · 2020 – 2022", score: "83.9%" },
+    { title: "SSC", institution: "Z.P.H.S Chimanpally, Nizamabad · 2019 – 2020", score: "CGPA 10 / 10" },
+  ];
+
+  const roles = experience?.length ? experience : fallbackRoles;
+  const eduItems = education?.length ? education : fallbackEducation;
+
   return (
     <section id="experience" aria-labelledby="experience-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
@@ -567,7 +605,7 @@ function Experience() {
         <div className="space-y-6">
           {roles.map((r, i) => (
             <motion.article key={r.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: i * 0.05 }} className="relative overflow-hidden card-premium p-8 sm:p-10">
-              {r.current && <div aria-hidden="true" className="absolute -right-20 -top-20 h-64 w-64 rounded-full" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.25), transparent 60%)" }} />}
+              {r.is_current && <div aria-hidden="true" className="absolute -right-20 -top-20 h-64 w-64 rounded-full" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.25), transparent 60%)" }} />}
               <div className="relative grid grid-cols-1 gap-8 md:grid-cols-[auto_1fr]">
                 <div aria-hidden="true" className="grid h-20 w-20 place-items-center rounded-2xl" style={{ background: "var(--gradient-text)" }}>
                   <r.icon className="h-9 w-9 text-primary-foreground" />
@@ -575,7 +613,7 @@ function Experience() {
                 <div>
                   <div className="flex flex-wrap items-baseline gap-3">
                     <h3 className="font-display text-2xl font-bold sm:text-3xl">{r.title}</h3>
-                    {r.current && <span className="rounded-full glass px-3 py-1 text-xs text-primary">Current</span>}
+                    {r.is_current && <span className="rounded-full glass px-3 py-1 text-xs text-primary">Current</span>}
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-3 text-muted-foreground">
                     <span className="font-medium text-foreground">{r.company}</span>
@@ -585,7 +623,7 @@ function Experience() {
                     <span className="inline-flex items-center gap-1 text-sm"><MapPin aria-hidden="true" className="h-3.5 w-3.5" /> {r.location}</span>
                   </div>
                   <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {r.bullets.map((b) => (
+                    {r.bullets.map((b: string) => (
                       <li key={b} className="flex gap-2 text-sm text-muted-foreground">
                         <span aria-hidden="true" className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" /> {b}
                       </li>
@@ -599,17 +637,13 @@ function Experience() {
 
         {/* Education */}
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.1 }} className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {[
-            { title: "B.Tech — Electronics & Communication", where: "Narasimha Reddy Engineering College · 2022 – 2026", score: "CGPA 8.42 / 10" },
-            { title: "Intermediate", where: "Trinity Junior College, Karimnagar · 2020 – 2022", score: "83.9%" },
-            { title: "SSC", where: "Z.P.H.S Chimanpally, Nizamabad · 2019 – 2020", score: "CGPA 10 / 10" },
-          ].map((e) => (
+          {eduItems.map((e) => (
             <div key={e.title} className="card-premium p-6">
               <div className="mb-3 flex items-center gap-3">
                 <div aria-hidden="true" className="grid h-10 w-10 place-items-center rounded-xl glass"><GraduationCap className="h-5 w-5 text-primary" /></div>
                 <h4 className="font-display text-base font-semibold">{e.title}</h4>
               </div>
-              <p className="text-sm text-muted-foreground">{e.where}</p>
+              <p className="text-sm text-muted-foreground">{e.institution}</p>
               <div className="mt-3 inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-xs"><Star aria-hidden="true" className="h-3.5 w-3.5 text-primary" /> {e.score}</div>
             </div>
           ))}
@@ -623,12 +657,15 @@ function Experience() {
    SKILLS
    ============================================================ */
 function Skills() {
+  const { skills } = usePortfolioData();
+  const items = skills?.length ? skills : SKILLS;
+
   return (
     <section id="skills" aria-labelledby="skills-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <SectionHeading id="skills-title" eyebrow="Skills" title={<>My <span className="text-gradient">technical toolbox</span></>} subtitle="Languages, frameworks, and hardware I use to ship real software." />
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {SKILLS.map((s, gi) => (
+          {items.map((s, gi) => (
             <motion.div key={s.group} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: gi * 0.05 }} whileHover={{ y: -6 }} className="card-premium group relative overflow-hidden p-6">
               <div aria-hidden="true" className="absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-0 blur-2xl transition-opacity group-hover:opacity-100" style={{ background: "oklch(0.85 0.18 165 / 0.35)" }} />
               <div className="relative">
@@ -662,12 +699,16 @@ function Skills() {
    PROJECTS
    ============================================================ */
 function Projects() {
+  const { projects, siteSettings } = usePortfolioData();
+  const items = projects?.length ? projects : PROJECTS;
+  const githubUrl = siteSettings?.github_url || FALLBACK_GITHUB;
+
   return (
     <section id="projects" aria-labelledby="projects-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <SectionHeading id="projects-title" eyebrow="Projects" title={<>Selected <span className="text-gradient">work</span></>} subtitle="A handful of things I've designed, built, and shipped." />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {PROJECTS.map((p, i) => (
+          {items.map((p, i) => (
             <motion.article key={p.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.06 }} whileHover={{ y: -8 }} className="card-premium group relative flex flex-col overflow-hidden">
               <div aria-hidden="true" className={`relative aspect-[16/9] overflow-hidden bg-gradient-to-br ${p.accent}`}>
                 <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
@@ -691,7 +732,7 @@ function Projects() {
                   {p.embedded ? (
                     <span className="inline-flex items-center gap-1 text-muted-foreground/80"><CircuitBoard aria-hidden="true" className="h-3.5 w-3.5" /> Hardware Build</span>
                   ) : (
-                    <a href={GITHUB} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded" aria-label={`View ${p.title} related work on GitHub`}>GitHub <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" /></a>
+                    <a href={githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded" aria-label={`View ${p.title} related work on GitHub`}>GitHub <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" /></a>
                   )}
                 </div>
               </div>
@@ -707,13 +748,16 @@ function Projects() {
    TIMELINE
    ============================================================ */
 function Timeline() {
+  const { timeline } = usePortfolioData();
+  const items = timeline?.length ? timeline : TIMELINE;
+
   return (
     <section id="timeline" aria-labelledby="timeline-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-4xl">
         <SectionHeading id="timeline-title" eyebrow="Timeline" title={<>The <span className="text-gradient">journey so far</span></>} />
         <ol className="relative list-none">
           <div aria-hidden="true" className="absolute left-4 top-0 h-full w-px bg-gradient-to-b from-primary/60 via-primary/20 to-transparent md:left-1/2 md:-translate-x-1/2" />
-          {TIMELINE.map((t, i) => {
+          {items.map((t, i) => {
             const left = i % 2 === 0;
             return (
               <motion.li key={t.year + t.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.05 * i }} className={`relative mb-10 flex flex-col md:flex-row ${left ? "md:justify-start" : "md:justify-end"}`}>
@@ -741,12 +785,15 @@ function Timeline() {
    SERVICES
    ============================================================ */
 function Services() {
+  const { services } = usePortfolioData();
+  const items = services?.length ? services : SERVICES;
+
   return (
     <section id="services" aria-labelledby="services-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <SectionHeading id="services-title" eyebrow="Services" title={<>How I can <span className="text-gradient">help</span></>} subtitle="From landing pages to full products and hardware prototypes." />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {SERVICES.map((s, i) => (
+          {items.map((s, i) => (
             <motion.div key={s.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.04 }} whileHover={{ y: -6 }} className="card-premium group relative overflow-hidden p-6">
               <div aria-hidden="true" className="mb-4 grid h-11 w-11 place-items-center rounded-xl transition-transform group-hover:scale-110" style={{ background: "var(--gradient-text)" }}>
                 <s.icon className="h-5 w-5 text-primary-foreground" />
@@ -765,12 +812,15 @@ function Services() {
    WHY HIRE
    ============================================================ */
 function WhyHire() {
+  const { whyHire } = usePortfolioData();
+  const items = whyHire?.length ? whyHire : WHY_HIRE;
+
   return (
     <section aria-labelledby="why-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <SectionHeading id="why-title" eyebrow="Why hire me" title={<>Reasons I might be a <span className="text-gradient">good fit</span></>} />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {WHY_HIRE.map((w, i) => (
+          {items.map((w, i) => (
             <motion.div key={w.title} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.04 }} className="card-premium p-5">
               <div className="mb-2 font-mono text-xs text-primary">0{i + 1}</div>
               <div className="font-display font-semibold">{w.title}</div>
@@ -787,12 +837,15 @@ function WhyHire() {
    CERTIFICATIONS
    ============================================================ */
 function Certifications() {
+  const { certifications } = usePortfolioData();
+  const items = certifications?.length ? certifications : CERTIFICATIONS;
+
   return (
     <section aria-labelledby="certs-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-4xl">
         <SectionHeading id="certs-title" eyebrow="Certifications" title={<>Credentials &amp; <span className="text-gradient">learning</span></>} />
         <ul className="grid grid-cols-1 gap-5 list-none">
-          {CERTIFICATIONS.map((c, i) => (
+          {items.map((c, i) => (
             <motion.li key={c.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.05 }} className="card-premium flex items-center gap-5 p-6">
               <div aria-hidden="true" className="grid h-14 w-14 shrink-0 place-items-center rounded-xl" style={{ background: "var(--gradient-text)" }}>
                 <c.icon className="h-6 w-6 text-primary-foreground" />
@@ -820,6 +873,13 @@ const contactSchema = z.object({
 });
 
 function Contact() {
+  const { siteSettings } = usePortfolioData();
+  const email = siteSettings?.email || FALLBACK_EMAIL;
+  const phoneDisplay = siteSettings?.phone_display || FALLBACK_PHONE_DISPLAY;
+  const phoneTel = siteSettings?.phone_tel || FALLBACK_PHONE_TEL;
+  const linkedinUrl = siteSettings?.linkedin_url || FALLBACK_LINKEDIN;
+  const resumeUrl = siteSettings?.resume_url || FALLBACK_RESUME_URL;
+
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof z.infer<typeof contactSchema>, string>>>({});
 
@@ -847,7 +907,7 @@ function Contact() {
     setSubmitting(true);
     try {
       // Store in Supabase
-      const { error } = await supabase.from("contact_messages").insert(parsed.data);
+      const { error } = await supabase.from("messages").insert(parsed.data);
       if (error) throw error;
 
       // Send to WhatsApp Cloud API via Google Apps Script
@@ -876,11 +936,11 @@ function Contact() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
           <div className="space-y-4">
             {[
-              { icon: Mail, label: "Email", value: EMAIL, href: `mailto:${EMAIL}` },
-              { icon: Phone, label: "Phone", value: PHONE_DISPLAY, href: `tel:${PHONE_TEL}` },
+              { icon: Mail, label: "Email", value: email, href: `mailto:${email}` },
+              { icon: Phone, label: "Phone", value: phoneDisplay, href: `tel:${phoneTel}` },
               { icon: MapPin, label: "Location", value: "Hyderabad, Telangana, India", href: "https://www.google.com/maps/place/Hyderabad" },
-              { icon: Linkedin, label: "LinkedIn", value: "/in/ganesh-kaithoju", href: LINKEDIN },
-              { icon: Download, label: "Resume", value: "Download PDF", href: RESUME_URL },
+              { icon: Linkedin, label: "LinkedIn", value: "/in/ganesh-kaithoju", href: linkedinUrl },
+              { icon: Download, label: "Resume", value: "Download PDF", href: resumeUrl },
             ].map((c) => (
               <a key={c.label} href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel={c.href.startsWith("http") ? "noreferrer" : undefined} className="card-premium group flex items-center gap-4 p-5 transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
                 <div aria-hidden="true" className="grid h-11 w-11 place-items-center rounded-xl glass"><c.icon className="h-5 w-5 text-primary" /></div>
@@ -933,6 +993,13 @@ function Field({ label, name, type = "text", placeholder, required, textarea, ma
    FOOTER
    ============================================================ */
 function Footer() {
+  const { siteSettings } = usePortfolioData();
+
+  const linkedinUrl = siteSettings?.linkedin_url || FALLBACK_LINKEDIN;
+  const githubUrl = siteSettings?.github_url || FALLBACK_GITHUB;
+  const email = siteSettings?.email || FALLBACK_EMAIL;
+  const resumeUrl = siteSettings?.resume_url || FALLBACK_RESUME_URL;
+
   return (
     <footer className="relative border-t border-border/60 px-4 py-10 sm:px-6">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 md:flex-row">
@@ -944,10 +1011,10 @@ function Footer() {
           </div>
         </div>
         <nav aria-label="Footer social links" className="flex items-center gap-5 text-muted-foreground">
-          <a aria-label="LinkedIn" href={LINKEDIN} target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Linkedin aria-hidden="true" className="h-5 w-5" /></a>
-          <a aria-label="GitHub" href={GITHUB} target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Github aria-hidden="true" className="h-5 w-5" /></a>
-          <a aria-label="Email" href={`mailto:${EMAIL}`} className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Mail aria-hidden="true" className="h-5 w-5" /></a>
-          <a aria-label="Download resume" href={RESUME_URL} download="Ganesh_Kaithoju_Resume.pdf" rel="noopener" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Download aria-hidden="true" className="h-5 w-5" /></a>
+          <a aria-label="LinkedIn" href={linkedinUrl} target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Linkedin aria-hidden="true" className="h-5 w-5" /></a>
+          <a aria-label="GitHub" href={githubUrl} target="_blank" rel="noreferrer" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Github aria-hidden="true" className="h-5 w-5" /></a>
+          <a aria-label="Email" href={`mailto:${email}`} className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Mail aria-hidden="true" className="h-5 w-5" /></a>
+          <a aria-label="Download resume" href={resumeUrl} download="Ganesh_Kaithoju_Resume.pdf" rel="noopener" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"><Download aria-hidden="true" className="h-5 w-5" /></a>
         </nav>
         <div className="text-center text-xs text-muted-foreground md:text-right">
           <div>© {new Date().getFullYear()} Kaithoju Ganesh. All rights reserved.</div>

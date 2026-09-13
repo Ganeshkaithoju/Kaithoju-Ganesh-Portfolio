@@ -3,7 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, Mail, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { saveOwnerToken } from "../lib/apiClient";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/owner-login")({
   component: OwnerLogin,
@@ -25,20 +25,13 @@ function OwnerLogin() {
 
     try {
       setLoading(true);
-      const response = await fetch("/api/owner/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(data.error || "Login failed");
+      if (error) {
+        toast.error(error.message || "Login failed");
         return;
       }
 
-      saveOwnerToken(data.token);
       toast.success("Login successful!");
       navigate({ to: "/owner-dashboard" });
     } catch (err) {
@@ -154,9 +147,9 @@ function OwnerLogin() {
 
           {/* Info */}
           <div className="mt-6 rounded-lg border border-white/10 bg-white/[0.03] p-4 text-xs text-muted-foreground">
-            <p className="font-medium text-foreground mb-2">Credentials:</p>
-            <p>Email: from environment variable</p>
-            <p className="mt-1">Password: from environment variable</p>
+            <p className="font-medium text-foreground mb-2">Notice:</p>
+            <p>Authentication has been migrated to Supabase.</p>
+            <p className="mt-1">Please use your Supabase credentials.</p>
           </div>
         </div>
       </motion.div>

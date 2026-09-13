@@ -19,7 +19,6 @@ import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as ApiOwnerStatsRouteImport } from './routes/api/owner/stats'
 import { Route as ApiOwnerResetPasswordRouteImport } from './routes/api/owner/reset-password'
-import { Route as ApiOwnerMigrateCredentialsRouteImport } from './routes/api/owner/migrate-credentials'
 import { Route as ApiOwnerMessagesRouteImport } from './routes/api/owner/messages'
 import { Route as ApiOwnerLogoutRouteImport } from './routes/api/owner/logout'
 import { Route as ApiOwnerLoginRouteImport } from './routes/api/owner/login'
@@ -28,6 +27,11 @@ import { Route as ApiAdminStatsRouteImport } from './routes/api/admin/stats'
 import { Route as ApiAdminPendingRouteImport } from './routes/api/admin/pending'
 import { Route as ApiAdminMessagesRouteImport } from './routes/api/admin/messages'
 import { Route as ApiAdminLoginRouteImport } from './routes/api/admin/login'
+import { Route as ApiOwnerMessagesIdPinRouteImport } from './routes/api/owner/messages/$id/pin'
+import { Route as ApiOwnerMessagesIdHideRouteImport } from './routes/api/owner/messages/$id/hide'
+import { Route as ApiOwnerMessagesIdFeatureRouteImport } from './routes/api/owner/messages/$id/feature'
+import { Route as ApiOwnerMessagesIdDeleteRouteImport } from './routes/api/owner/messages/$id/delete'
+import { Route as ApiOwnerMessagesIdApproveRouteImport } from './routes/api/owner/messages/$id/approve'
 import { Route as ApiAdminMessagesChar91idChar93PinRouteImport } from './routes/api/admin/messages/[id]/pin'
 import { Route as ApiAdminMessagesChar91idChar93HideRouteImport } from './routes/api/admin/messages/[id]/hide'
 import { Route as ApiAdminMessagesChar91idChar93FeatureRouteImport } from './routes/api/admin/messages/[id]/feature'
@@ -84,12 +88,6 @@ const ApiOwnerResetPasswordRoute = ApiOwnerResetPasswordRouteImport.update({
   path: '/api/owner/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiOwnerMigrateCredentialsRoute =
-  ApiOwnerMigrateCredentialsRouteImport.update({
-    id: '/api/owner/migrate-credentials',
-    path: '/api/owner/migrate-credentials',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiOwnerMessagesRoute = ApiOwnerMessagesRouteImport.update({
   id: '/api/owner/messages',
   path: '/api/owner/messages',
@@ -130,6 +128,34 @@ const ApiAdminLoginRoute = ApiAdminLoginRouteImport.update({
   path: '/api/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOwnerMessagesIdPinRoute = ApiOwnerMessagesIdPinRouteImport.update({
+  id: '/$id/pin',
+  path: '/$id/pin',
+  getParentRoute: () => ApiOwnerMessagesRoute,
+} as any)
+const ApiOwnerMessagesIdHideRoute = ApiOwnerMessagesIdHideRouteImport.update({
+  id: '/$id/hide',
+  path: '/$id/hide',
+  getParentRoute: () => ApiOwnerMessagesRoute,
+} as any)
+const ApiOwnerMessagesIdFeatureRoute =
+  ApiOwnerMessagesIdFeatureRouteImport.update({
+    id: '/$id/feature',
+    path: '/$id/feature',
+    getParentRoute: () => ApiOwnerMessagesRoute,
+  } as any)
+const ApiOwnerMessagesIdDeleteRoute =
+  ApiOwnerMessagesIdDeleteRouteImport.update({
+    id: '/$id/delete',
+    path: '/$id/delete',
+    getParentRoute: () => ApiOwnerMessagesRoute,
+  } as any)
+const ApiOwnerMessagesIdApproveRoute =
+  ApiOwnerMessagesIdApproveRouteImport.update({
+    id: '/$id/approve',
+    path: '/$id/approve',
+    getParentRoute: () => ApiOwnerMessagesRoute,
+  } as any)
 const ApiAdminMessagesChar91idChar93PinRoute =
   ApiAdminMessagesChar91idChar93PinRouteImport.update({
     id: '/id/pin',
@@ -177,8 +203,7 @@ export interface FileRoutesByFullPath {
   '/api/comments/approved': typeof ApiCommentsApprovedRoute
   '/api/owner/login': typeof ApiOwnerLoginRoute
   '/api/owner/logout': typeof ApiOwnerLogoutRoute
-  '/api/owner/messages': typeof ApiOwnerMessagesRoute
-  '/api/owner/migrate-credentials': typeof ApiOwnerMigrateCredentialsRoute
+  '/api/owner/messages': typeof ApiOwnerMessagesRouteWithChildren
   '/api/owner/reset-password': typeof ApiOwnerResetPasswordRoute
   '/api/owner/stats': typeof ApiOwnerStatsRoute
   '/api/admin/messages/id/approve': typeof ApiAdminMessagesChar91idChar93ApproveRoute
@@ -186,6 +211,11 @@ export interface FileRoutesByFullPath {
   '/api/admin/messages/id/feature': typeof ApiAdminMessagesChar91idChar93FeatureRoute
   '/api/admin/messages/id/hide': typeof ApiAdminMessagesChar91idChar93HideRoute
   '/api/admin/messages/id/pin': typeof ApiAdminMessagesChar91idChar93PinRoute
+  '/api/owner/messages/$id/approve': typeof ApiOwnerMessagesIdApproveRoute
+  '/api/owner/messages/$id/delete': typeof ApiOwnerMessagesIdDeleteRoute
+  '/api/owner/messages/$id/feature': typeof ApiOwnerMessagesIdFeatureRoute
+  '/api/owner/messages/$id/hide': typeof ApiOwnerMessagesIdHideRoute
+  '/api/owner/messages/$id/pin': typeof ApiOwnerMessagesIdPinRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -203,8 +233,7 @@ export interface FileRoutesByTo {
   '/api/comments/approved': typeof ApiCommentsApprovedRoute
   '/api/owner/login': typeof ApiOwnerLoginRoute
   '/api/owner/logout': typeof ApiOwnerLogoutRoute
-  '/api/owner/messages': typeof ApiOwnerMessagesRoute
-  '/api/owner/migrate-credentials': typeof ApiOwnerMigrateCredentialsRoute
+  '/api/owner/messages': typeof ApiOwnerMessagesRouteWithChildren
   '/api/owner/reset-password': typeof ApiOwnerResetPasswordRoute
   '/api/owner/stats': typeof ApiOwnerStatsRoute
   '/api/admin/messages/id/approve': typeof ApiAdminMessagesChar91idChar93ApproveRoute
@@ -212,6 +241,11 @@ export interface FileRoutesByTo {
   '/api/admin/messages/id/feature': typeof ApiAdminMessagesChar91idChar93FeatureRoute
   '/api/admin/messages/id/hide': typeof ApiAdminMessagesChar91idChar93HideRoute
   '/api/admin/messages/id/pin': typeof ApiAdminMessagesChar91idChar93PinRoute
+  '/api/owner/messages/$id/approve': typeof ApiOwnerMessagesIdApproveRoute
+  '/api/owner/messages/$id/delete': typeof ApiOwnerMessagesIdDeleteRoute
+  '/api/owner/messages/$id/feature': typeof ApiOwnerMessagesIdFeatureRoute
+  '/api/owner/messages/$id/hide': typeof ApiOwnerMessagesIdHideRoute
+  '/api/owner/messages/$id/pin': typeof ApiOwnerMessagesIdPinRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -230,8 +264,7 @@ export interface FileRoutesById {
   '/api/comments/approved': typeof ApiCommentsApprovedRoute
   '/api/owner/login': typeof ApiOwnerLoginRoute
   '/api/owner/logout': typeof ApiOwnerLogoutRoute
-  '/api/owner/messages': typeof ApiOwnerMessagesRoute
-  '/api/owner/migrate-credentials': typeof ApiOwnerMigrateCredentialsRoute
+  '/api/owner/messages': typeof ApiOwnerMessagesRouteWithChildren
   '/api/owner/reset-password': typeof ApiOwnerResetPasswordRoute
   '/api/owner/stats': typeof ApiOwnerStatsRoute
   '/api/admin/messages/id/approve': typeof ApiAdminMessagesChar91idChar93ApproveRoute
@@ -239,6 +272,11 @@ export interface FileRoutesById {
   '/api/admin/messages/id/feature': typeof ApiAdminMessagesChar91idChar93FeatureRoute
   '/api/admin/messages/id/hide': typeof ApiAdminMessagesChar91idChar93HideRoute
   '/api/admin/messages/id/pin': typeof ApiAdminMessagesChar91idChar93PinRoute
+  '/api/owner/messages/$id/approve': typeof ApiOwnerMessagesIdApproveRoute
+  '/api/owner/messages/$id/delete': typeof ApiOwnerMessagesIdDeleteRoute
+  '/api/owner/messages/$id/feature': typeof ApiOwnerMessagesIdFeatureRoute
+  '/api/owner/messages/$id/hide': typeof ApiOwnerMessagesIdHideRoute
+  '/api/owner/messages/$id/pin': typeof ApiOwnerMessagesIdPinRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -259,7 +297,6 @@ export interface FileRouteTypes {
     | '/api/owner/login'
     | '/api/owner/logout'
     | '/api/owner/messages'
-    | '/api/owner/migrate-credentials'
     | '/api/owner/reset-password'
     | '/api/owner/stats'
     | '/api/admin/messages/id/approve'
@@ -267,6 +304,11 @@ export interface FileRouteTypes {
     | '/api/admin/messages/id/feature'
     | '/api/admin/messages/id/hide'
     | '/api/admin/messages/id/pin'
+    | '/api/owner/messages/$id/approve'
+    | '/api/owner/messages/$id/delete'
+    | '/api/owner/messages/$id/feature'
+    | '/api/owner/messages/$id/hide'
+    | '/api/owner/messages/$id/pin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -285,7 +327,6 @@ export interface FileRouteTypes {
     | '/api/owner/login'
     | '/api/owner/logout'
     | '/api/owner/messages'
-    | '/api/owner/migrate-credentials'
     | '/api/owner/reset-password'
     | '/api/owner/stats'
     | '/api/admin/messages/id/approve'
@@ -293,6 +334,11 @@ export interface FileRouteTypes {
     | '/api/admin/messages/id/feature'
     | '/api/admin/messages/id/hide'
     | '/api/admin/messages/id/pin'
+    | '/api/owner/messages/$id/approve'
+    | '/api/owner/messages/$id/delete'
+    | '/api/owner/messages/$id/feature'
+    | '/api/owner/messages/$id/hide'
+    | '/api/owner/messages/$id/pin'
   id:
     | '__root__'
     | '/'
@@ -311,7 +357,6 @@ export interface FileRouteTypes {
     | '/api/owner/login'
     | '/api/owner/logout'
     | '/api/owner/messages'
-    | '/api/owner/migrate-credentials'
     | '/api/owner/reset-password'
     | '/api/owner/stats'
     | '/api/admin/messages/id/approve'
@@ -319,6 +364,11 @@ export interface FileRouteTypes {
     | '/api/admin/messages/id/feature'
     | '/api/admin/messages/id/hide'
     | '/api/admin/messages/id/pin'
+    | '/api/owner/messages/$id/approve'
+    | '/api/owner/messages/$id/delete'
+    | '/api/owner/messages/$id/feature'
+    | '/api/owner/messages/$id/hide'
+    | '/api/owner/messages/$id/pin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -337,8 +387,7 @@ export interface RootRouteChildren {
   ApiCommentsApprovedRoute: typeof ApiCommentsApprovedRoute
   ApiOwnerLoginRoute: typeof ApiOwnerLoginRoute
   ApiOwnerLogoutRoute: typeof ApiOwnerLogoutRoute
-  ApiOwnerMessagesRoute: typeof ApiOwnerMessagesRoute
-  ApiOwnerMigrateCredentialsRoute: typeof ApiOwnerMigrateCredentialsRoute
+  ApiOwnerMessagesRoute: typeof ApiOwnerMessagesRouteWithChildren
   ApiOwnerResetPasswordRoute: typeof ApiOwnerResetPasswordRoute
   ApiOwnerStatsRoute: typeof ApiOwnerStatsRoute
 }
@@ -415,13 +464,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOwnerResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/owner/migrate-credentials': {
-      id: '/api/owner/migrate-credentials'
-      path: '/api/owner/migrate-credentials'
-      fullPath: '/api/owner/migrate-credentials'
-      preLoaderRoute: typeof ApiOwnerMigrateCredentialsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/owner/messages': {
       id: '/api/owner/messages'
       path: '/api/owner/messages'
@@ -477,6 +519,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/admin/login'
       preLoaderRoute: typeof ApiAdminLoginRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/owner/messages/$id/pin': {
+      id: '/api/owner/messages/$id/pin'
+      path: '/$id/pin'
+      fullPath: '/api/owner/messages/$id/pin'
+      preLoaderRoute: typeof ApiOwnerMessagesIdPinRouteImport
+      parentRoute: typeof ApiOwnerMessagesRoute
+    }
+    '/api/owner/messages/$id/hide': {
+      id: '/api/owner/messages/$id/hide'
+      path: '/$id/hide'
+      fullPath: '/api/owner/messages/$id/hide'
+      preLoaderRoute: typeof ApiOwnerMessagesIdHideRouteImport
+      parentRoute: typeof ApiOwnerMessagesRoute
+    }
+    '/api/owner/messages/$id/feature': {
+      id: '/api/owner/messages/$id/feature'
+      path: '/$id/feature'
+      fullPath: '/api/owner/messages/$id/feature'
+      preLoaderRoute: typeof ApiOwnerMessagesIdFeatureRouteImport
+      parentRoute: typeof ApiOwnerMessagesRoute
+    }
+    '/api/owner/messages/$id/delete': {
+      id: '/api/owner/messages/$id/delete'
+      path: '/$id/delete'
+      fullPath: '/api/owner/messages/$id/delete'
+      preLoaderRoute: typeof ApiOwnerMessagesIdDeleteRouteImport
+      parentRoute: typeof ApiOwnerMessagesRoute
+    }
+    '/api/owner/messages/$id/approve': {
+      id: '/api/owner/messages/$id/approve'
+      path: '/$id/approve'
+      fullPath: '/api/owner/messages/$id/approve'
+      preLoaderRoute: typeof ApiOwnerMessagesIdApproveRouteImport
+      parentRoute: typeof ApiOwnerMessagesRoute
     }
     '/api/admin/messages/id/pin': {
       id: '/api/admin/messages/id/pin'
@@ -540,6 +617,25 @@ const ApiAdminMessagesRouteChildren: ApiAdminMessagesRouteChildren = {
 const ApiAdminMessagesRouteWithChildren =
   ApiAdminMessagesRoute._addFileChildren(ApiAdminMessagesRouteChildren)
 
+interface ApiOwnerMessagesRouteChildren {
+  ApiOwnerMessagesIdApproveRoute: typeof ApiOwnerMessagesIdApproveRoute
+  ApiOwnerMessagesIdDeleteRoute: typeof ApiOwnerMessagesIdDeleteRoute
+  ApiOwnerMessagesIdFeatureRoute: typeof ApiOwnerMessagesIdFeatureRoute
+  ApiOwnerMessagesIdHideRoute: typeof ApiOwnerMessagesIdHideRoute
+  ApiOwnerMessagesIdPinRoute: typeof ApiOwnerMessagesIdPinRoute
+}
+
+const ApiOwnerMessagesRouteChildren: ApiOwnerMessagesRouteChildren = {
+  ApiOwnerMessagesIdApproveRoute: ApiOwnerMessagesIdApproveRoute,
+  ApiOwnerMessagesIdDeleteRoute: ApiOwnerMessagesIdDeleteRoute,
+  ApiOwnerMessagesIdFeatureRoute: ApiOwnerMessagesIdFeatureRoute,
+  ApiOwnerMessagesIdHideRoute: ApiOwnerMessagesIdHideRoute,
+  ApiOwnerMessagesIdPinRoute: ApiOwnerMessagesIdPinRoute,
+}
+
+const ApiOwnerMessagesRouteWithChildren =
+  ApiOwnerMessagesRoute._addFileChildren(ApiOwnerMessagesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   OwnerDashboardRoute: OwnerDashboardRoute,
@@ -556,8 +652,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCommentsApprovedRoute: ApiCommentsApprovedRoute,
   ApiOwnerLoginRoute: ApiOwnerLoginRoute,
   ApiOwnerLogoutRoute: ApiOwnerLogoutRoute,
-  ApiOwnerMessagesRoute: ApiOwnerMessagesRoute,
-  ApiOwnerMigrateCredentialsRoute: ApiOwnerMigrateCredentialsRoute,
+  ApiOwnerMessagesRoute: ApiOwnerMessagesRouteWithChildren,
   ApiOwnerResetPasswordRoute: ApiOwnerResetPasswordRoute,
   ApiOwnerStatsRoute: ApiOwnerStatsRoute,
 }

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { LogOut, Search, Eye, EyeOff, Trash2, Pin, Star, MessageCircle } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   id: string;
@@ -52,26 +53,49 @@ function OwnerDashboard() {
     try {
       setLoading(true);
 
-      const [messagesRes, statsRes] = await Promise.all([
-        fetch(
-          `/api/owner/messages?status=${filter}&search=${search}&limit=${ITEMS_PER_PAGE}&offset=${
-            page * ITEMS_PER_PAGE
-          }`
-        ),
-        fetch("/api/owner/stats"),
-      ]);
-
-      if (messagesRes.status === 401 || statsRes.status === 401) {
+      const { data: sessionData, error: authError } = await supabase.auth.getSession();
+      
+      if (authError || !sessionData.session) {
         navigate({ to: "/owner-login" });
         return;
       }
 
-      const messagesData = await messagesRes.json();
-      const statsData = await statsRes.json();
+      let query = supabase
+        .from('messages')
+        .select('*', { count: 'exact' });
 
-      setMessages(messagesData.messages || []);
-      setTotalMessages(messagesData.total || 0);
-      setStats(statsData);
+      if (filter !== "all") {
+        query = query.eq('status', filter);
+      }
+
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,subject.ilike.%${search}%,message.ilike.%${search}%`);
+      }
+
+      query = query
+        .order('created_at', { ascending: false })
+        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+
+      const { data: messagesData, error, count } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      // Fetch stats
+      const { data: allMessages } = await supabase.from('messages').select('status, is_pinned, is_featured');
+      const statsObj = {
+        total: allMessages?.length || 0,
+        pending: allMessages?.filter((m) => m.status === 'pending').length || 0,
+        approved: allMessages?.filter((m) => m.status === 'approved').length || 0,
+        hidden: allMessages?.filter((m) => m.status === 'hidden').length || 0,
+        featured: allMessages?.filter((m) => m.is_featured).length || 0,
+        pinned: allMessages?.filter((m) => m.is_pinned).length || 0,
+      };
+
+      setMessages(messagesData || []);
+      setTotalMessages(count || 0);
+      setStats(statsObj);
     } catch (err) {
       console.error("Error fetching data:", err);
       toast.error("Failed to load data");
@@ -85,25 +109,37 @@ function OwnerDashboard() {
     action: "approve" | "hide" | "delete" | "pin" | "feature"
   ) {
     try {
-      const response = await fetch(`/api/owner/messages/${messageId}/${action}`, {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update message");
+      let updateData = {};
+      if (action === "approve") updateData = { status: "approved" };
+      if (action === "hide") updateData = { status: "hidden" };
+      if (action === "pin") {
+        const msg = messages.find(m => m.id === messageId);
+        updateData = { is_pinned: !msg?.is_pinned };
+      }
+      if (action === "feature") {
+        const msg = messages.find(m => m.id === messageId);
+        updateData = { is_featured: !msg?.is_featured };
       }
 
-      toast.success(`Message ${action}d successfully`);
+      if (action === "delete") {
+        const { error } = await supabase.from('messages').delete().eq('id', messageId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('messages').update(updateData).eq('id', messageId);
+        if (error) throw error;
+      }
+
+      toast.success(`Message updated successfully`);
       await fetchData();
     } catch (err) {
-      console.error(`Error ${action}ing message:`, err);
-      toast.error(`Failed to ${action} message`);
+      console.error(`Error updating message:`, err);
+      toast.error(`Failed to update message`);
     }
   }
 
   async function handleLogout() {
     try {
-      await fetch("/api/owner/logout", { method: "POST" });
+      await supabase.auth.signOut();
       navigate({ to: "/" });
     } catch (err) {
       console.error("Logout error:", err);
