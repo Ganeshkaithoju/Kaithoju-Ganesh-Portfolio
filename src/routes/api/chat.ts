@@ -85,10 +85,14 @@ export const Route = createFileRoute("/api/chat")({
 
         // Cleanse and prioritize Gemini API key from environment variables
         const rawKey =
+          process.env.AI_API_KEY ||
+          (import.meta as any).env?.AI_API_KEY ||
+          process.env.GEMINI_API_KEY ||
+          (import.meta as any).env?.GEMINI_API_KEY ||
           process.env.VITE_GEMINI_API_KEY ||
           (import.meta as any).env?.VITE_GEMINI_API_KEY ||
-          process.env.AI_API_KEY ||
-          (import.meta as any).env?.AI_API_KEY;
+          process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+          (import.meta as any).env?.GOOGLE_GENERATIVE_AI_API_KEY;
 
         const key = rawKey ? String(rawKey).replace(/^["']|["']$/g, "").trim() : "";
         if (!key) return new Response("Missing API KEY", { status: 500 });
