@@ -24,6 +24,7 @@ const CORE_SECTION_TAB_MAP: Record<string, { tab: string; label: string }> = {
   projects: { tab: "projects", label: "Projects & Tech" },
   experience: { tab: "experience", label: "Experience & Roles" },
   education: { tab: "education", label: "Education & Scores" },
+  timeline: { tab: "timeline", label: "Timeline & Milestones" },
   services: { tab: "services", label: "Services & Offerings" },
   "why-hire": { tab: "why-hire", label: "Why Hire Me Cards" },
   achievements: { tab: "achievements", label: "Key Stats & Numbers" },

@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { sendContactNotification } from "@/lib/contact-notification";
 import { PublicComments } from "@/components/PublicComments";
-import { usePortfolioData } from "@/hooks/usePortfolioData";
+import { usePortfolioData, iconMap } from "@/hooks/usePortfolioData";
 
 export const Route = createFileRoute("/")({ component: PortfolioPage });
 
@@ -316,7 +316,8 @@ function PortfolioPage() {
             hero: Hero,
             marquee: MarqueeStrip,
             about: About,
-            stats: Stats,
+            achievements: Achievements,
+            stats: Achievements,
             experience: Experience,
             education: Education,
             skills: Skills,
@@ -329,7 +330,7 @@ function PortfolioPage() {
             comments: PublicComments
           };
 
-          const defaultOrder = ["hero", "marquee", "about", "stats", "experience", "education", "skills", "projects", "timeline", "services", "why-hire", "certifications", "contact", "comments"];
+          const defaultOrder = ["hero", "marquee", "about", "achievements", "skills", "projects", "experience", "education", "timeline", "services", "why-hire", "certifications", "contact", "comments"];
 
           let sectionsToRender = defaultOrder.map(id => ({ id, is_visible: true, display_order: defaultOrder.indexOf(id) }));
 
@@ -656,30 +657,49 @@ function About() {
 }
 
 /* ============================================================
-   STATS
+   ACHIEVEMENTS
    ============================================================ */
-function Stats() {
+function Achievements() {
   const { achievements, sections } = usePortfolioData();
   const items = achievements?.length ? achievements : ACHIEVEMENTS;
 
-  const section = sections?.find(s => s.id === 'achievements');
+  const section = sections?.find(s => s.id === 'achievements' || s.id === 'stats');
   if (sections && section && !section.is_visible) return null;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6">
-      <div className="grid grid-cols-2 gap-4 rounded-3xl border border-border/60 bg-background/50 p-6 shadow-sm backdrop-blur-xl md:grid-cols-4 md:p-8">
-        {items.map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.08 }} className="card-premium p-6 text-center">
-            <div className="font-display text-4xl font-bold text-gradient sm:text-5xl">
-              <Counter to={s.value} suffix={s.suffix} />
-            </div>
-            <div className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">{s.label}</div>
-          </motion.div>
-        ))}
+    <section id="achievements" aria-labelledby="achievements-title" className="relative px-4 py-24 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <SectionHeading
+          id="achievements-title"
+          eyebrow={section?.title || "Achievements"}
+          title={section?.subtitle ? <>{section.subtitle}</> : <>Key <span className="text-gradient">Milestones & Numbers</span></>}
+        />
+        <div className="grid grid-cols-2 gap-4 rounded-3xl border border-border/60 bg-background/50 p-6 shadow-sm backdrop-blur-xl md:grid-cols-4 md:p-8">
+          {items.map((s: any, i: number) => (
+            <motion.div
+              key={s.label || s.title || i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.08 }}
+              className="card-premium p-6 text-center flex flex-col items-center justify-center"
+            >
+              <div className="font-display text-4xl font-bold text-gradient sm:text-5xl">
+                <Counter to={s.value || s.metric || "0"} suffix={s.suffix || ""} />
+              </div>
+              <div className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">{s.label || s.title}</div>
+              {s.description && (
+                <p className="mt-2 text-xs text-muted-foreground/80 line-clamp-2">{s.description}</p>
+              )}
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
+
+const Stats = Achievements;
 
 /* ============================================================
    EXPERIENCE
@@ -942,8 +962,8 @@ function Projects() {
    TIMELINE
    ============================================================ */
 function Timeline() {
-  const { sections } = usePortfolioData();
-  const items: any[] = [];
+  const { timeline, sections } = usePortfolioData();
+  const items = timeline?.length ? timeline : TIMELINE;
 
   const section = sections?.find(s => s.id === 'timeline');
   if (sections && section && !section.is_visible) return null;
@@ -960,17 +980,18 @@ function Timeline() {
           <div aria-hidden="true" className="absolute left-4 top-0 h-full w-px bg-gradient-to-b from-primary/60 via-primary/20 to-transparent md:left-1/2 md:-translate-x-1/2" />
           {items.map((t: any, i: number) => {
             const left = i % 2 === 0;
+            const IconComponent = t.icon || (t.icon_name && iconMap[t.icon_name]) || GraduationCap;
             return (
-              <motion.li key={t.year + t.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.05 * i }} className={`relative mb-10 flex flex-col md:flex-row ${left ? "md:justify-start" : "md:justify-end"}`}>
+              <motion.li key={(t.year || "") + (t.title || "") + i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.05 * i }} className={`relative mb-10 flex flex-col md:flex-row ${left ? "md:justify-start" : "md:justify-end"}`}>
                 <div aria-hidden="true" className={`absolute left-4 top-4 h-4 w-4 -translate-x-1/2 rounded-full ring-4 ring-background md:left-1/2 animate-pulse-glow`} style={{ background: "var(--gradient-text)" }} />
                 <div className={`ml-12 md:ml-0 md:w-[calc(50%-2rem)] ${left ? "md:pr-8 md:text-right" : "md:ml-auto md:pl-8"}`}>
                   <div className="card-premium p-6">
                     <div className={`mb-2 flex items-center gap-2 ${left ? "md:justify-end" : ""}`}>
-                      <t.icon className="h-4 w-4 text-primary" aria-hidden="true" />
+                      <IconComponent className="h-4 w-4 text-primary" aria-hidden="true" />
                       <span className="font-mono text-sm text-primary">{t.year}</span>
                     </div>
                     <h3 className="font-display text-lg font-semibold">{t.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{t.desc}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{t.desc || t.description}</p>
                   </div>
                 </div>
               </motion.li>

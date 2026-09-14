@@ -5,7 +5,7 @@ import {
   LogOut, LayoutDashboard, Settings, Type, User, Code2, 
   Briefcase, GraduationCap, Wrench, Star, Award, 
   Medal, MessageCircle, FileImage, ShieldCheck, AlignLeft, Globe,
-  FileText
+  FileText, Clock
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,7 @@ import { SkillsTab } from "@/components/dashboard/SkillsTab";
 import { ProjectsTab } from "@/components/dashboard/ProjectsTab";
 import { ExperienceTab } from "@/components/dashboard/ExperienceTab";
 import { EducationTab } from "@/components/dashboard/EducationTab";
+import { TimelineTab } from "@/components/dashboard/TimelineTab";
 import { ServicesTab } from "@/components/dashboard/ServicesTab";
 import { WhyHireTab } from "@/components/dashboard/WhyHireTab";
 import { AchievementsTab } from "@/components/dashboard/AchievementsTab";
@@ -78,6 +79,7 @@ function OwnerDashboard() {
         { id: "projects", label: "Projects", icon: Briefcase },
         { id: "experience", label: "Experience", icon: Briefcase },
         { id: "education", label: "Education", icon: GraduationCap },
+        { id: "timeline", label: "Timeline", icon: Clock },
         { id: "services", label: "Services", icon: Wrench },
         { id: "why-hire", label: "Why Hire Me", icon: Star },
         { id: "achievements", label: "Achievements", icon: Award },
@@ -130,6 +132,8 @@ function OwnerDashboard() {
         return <ExperienceTab />;
       case "education":
         return <EducationTab />;
+      case "timeline":
+        return <TimelineTab />;
       case "services":
         return <ServicesTab />;
       case "why-hire":

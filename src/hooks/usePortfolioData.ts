@@ -166,6 +166,65 @@ export function usePortfolioData() {
     }
   });
 
+  const { data: timeline, isLoading: loadingTimeline } = useQuery({
+    queryKey: ['timeline'],
+    queryFn: async () => {
+      // 1. Try fetching from public.timeline table first
+      try {
+        const { data, error } = await supabase
+          .from('timeline')
+          .select('*')
+          .eq('is_visible', true)
+          .order('display_order');
+          
+        if (!error && data && data.length > 0) {
+          return data.map(t => ({
+            ...t,
+            desc: t.description || t.desc,
+            icon: iconMap[t.icon_name || 'GraduationCap'] || GraduationCap
+          }));
+        }
+      } catch (err) {
+        // Table might not exist yet, proceed to fallback
+      }
+
+      // 2. Fall back to website_sections content column for 'timeline'
+      try {
+        const { data: secData } = await supabase
+          .from('website_sections')
+          .select('content')
+          .eq('id', 'timeline')
+          .single();
+          
+        if (secData?.content) {
+          const parsed = JSON.parse(secData.content);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed
+              .filter((t: any) => t.is_visible !== false)
+              .sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
+              .map((t: any) => ({
+                ...t,
+                desc: t.description || t.desc,
+                icon: iconMap[t.icon_name || 'GraduationCap'] || GraduationCap
+              }));
+          }
+        }
+      } catch (err) {
+        // Continue to static fallback
+      }
+
+      // 3. Fallback to default portfolio journey
+      return [
+        { year: "2020", title: "Completed SSC", desc: "Z.P.H.S Chimanpally, Nizamabad — CGPA 10/10.", icon: GraduationCap },
+        { year: "2022", title: "Completed Intermediate", desc: "Trinity Junior College, Karimnagar — 83.9%.", icon: GraduationCap },
+        { year: "2022", title: "Started B.Tech (ECE)", desc: "Began Electronics & Communication Engineering at Narasimha Reddy Engineering College.", icon: Code2 },
+        { year: "2025", title: "Python Intern @ YBI Foundation", desc: "Built projects like Tic-Tac-Toe and Rock-Paper-Scissors while learning core Python.", icon: Rocket },
+        { year: "2025", title: "Summer Intern @ BHEL", desc: "Team member on a thermal power systems project — analysed PLC and CNC processes at BHEL Hyderabad.", icon: Briefcase },
+        { year: "2026", title: "Intern @ Lumen Technologies", desc: "Intern on the Backup & Restore team at Lumen Technologies India — Bengaluru.", icon: HardDrive },
+      ];
+    }
+  });
+
   const { data: sections, isLoading: loadingSections } = useQuery({
     queryKey: ['sections'],
     queryFn: async () => {
@@ -190,6 +249,7 @@ export function usePortfolioData() {
     skills,
     experience,
     education,
+    timeline,
     services,
     whyHire,
     achievements,
@@ -197,6 +257,7 @@ export function usePortfolioData() {
     marquee,
     sections,
     navigation,
-    isLoading: loadingSettings || loadingProjects || loadingSkills || loadingExperience || loadingEducation || loadingServices || loadingWhyHire || loadingAchievements || loadingCertifications || loadingMarquee || loadingSections || loadingNavigation
+    isLoading: loadingSettings || loadingProjects || loadingSkills || loadingExperience || loadingEducation || loadingTimeline || loadingServices || loadingWhyHire || loadingAchievements || loadingCertifications || loadingMarquee || loadingSections || loadingNavigation
   };
 }
+
