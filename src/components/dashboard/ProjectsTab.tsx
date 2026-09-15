@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { Plus, Edit2, Trash2, Loader2, Save, X, GripVertical, Image as ImageIcon, Video, Star, AlertCircle, AlertTriangle, Check } from "lucide-react";
+import { Plus, Edit2, Trash2, Loader2, Save, X, GripVertical, Image as ImageIcon, Video, Star, AlertCircle, AlertTriangle, Check, Github, CircuitBoard } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { FFmpeg } from '@ffmpeg/ffmpeg';
@@ -24,6 +24,8 @@ interface Project {
   icon_name: string | null;
   accent_class: string | null;
   is_embedded: boolean;
+  has_github?: boolean;
+  github_url?: string | null;
   image_url: string | null;
   media_type: 'image' | 'video';
   display_order: number;
@@ -52,6 +54,8 @@ export function ProjectsTab() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const watchImageUrl = watch("image_url");
   const watchMediaType = watch("media_type");
+  const watchHasGithub = watch("has_github");
+  const watchIsEmbedded = watch("is_embedded");
 
   // In-place Video Optimization State
   const [videoToProcess, setVideoToProcess] = useState<File | null>(null);
@@ -89,6 +93,10 @@ export function ProjectsTab() {
   function openModal(project?: Project) {
     if (project) {
       setEditingProject(project);
+      const defaultHasGithub = project.has_github !== undefined
+        ? Boolean(project.has_github)
+        : !project.is_embedded;
+
       reset({
         title: project.title,
         tag: project.tag || "",
@@ -97,6 +105,8 @@ export function ProjectsTab() {
         icon_name: project.icon_name || "",
         accent_class: project.accent_class || "",
         is_embedded: project.is_embedded,
+        has_github: defaultHasGithub,
+        github_url: project.github_url || "",
         image_url: project.image_url || "",
         media_type: project.media_type || "image",
         display_order: project.display_order,
@@ -113,6 +123,8 @@ export function ProjectsTab() {
         icon_name: "Folder",
         accent_class: "from-blue-500 to-cyan-400",
         is_embedded: false,
+        has_github: true,
+        github_url: "",
         image_url: "",
         media_type: "image",
         display_order: projects.length > 0 ? Math.max(...projects.map(p => p.display_order)) + 1 : 1,
@@ -316,26 +328,51 @@ export function ProjectsTab() {
 
   async function onSubmit(data: ProjectFormData) {
     try {
-      const formattedData = {
+      const formattedData: any = {
         ...data,
         tech: data.tech.map(t => t.value).filter(t => t.trim() !== ""),
         updated_at: new Date().toISOString()
       };
+
+      let resError: any = null;
 
       if (editingProject) {
         const { error } = await supabase
           .from('projects')
           .update(formattedData)
           .eq('id', editingProject.id);
-        if (error) throw error;
-        toast.success("Project updated successfully");
+        resError = error;
       } else {
         const { error } = await supabase
           .from('projects')
           .insert([formattedData]);
-        if (error) throw error;
-        toast.success("Project added successfully");
+        resError = error;
       }
+
+      if (resError && (resError.code === '42703' || resError.message?.includes('github') || resError.message?.includes('schema cache'))) {
+        // Fallback without has_github and github_url if columns are not yet migrated in Supabase
+        const { has_github, github_url, ...fallbackData } = formattedData;
+        if (editingProject) {
+          const { error: retryError } = await supabase
+            .from('projects')
+            .update(fallbackData)
+            .eq('id', editingProject.id);
+          if (retryError) throw retryError;
+        } else {
+          const { error: retryError } = await supabase
+            .from('projects')
+            .insert([fallbackData]);
+          if (retryError) throw retryError;
+        }
+        toast.warning("Project saved! Note: run the SQL in PROJECTS_GITHUB_MIGRATION.md in Supabase to enable custom GitHub URLs.", { duration: 6000 });
+        closeModal();
+        fetchProjects();
+        return;
+      } else if (resError) {
+        throw resError;
+      }
+
+      toast.success(editingProject ? "Project updated successfully" : "Project added successfully");
       closeModal();
       fetchProjects();
     } catch (error: any) {
@@ -448,7 +485,22 @@ export function ProjectsTab() {
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t border-border/60">
-              <div className="text-xs text-muted-foreground">Order: {project.display_order}</div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Order: {project.display_order}</span>
+                {project.is_embedded ? (
+                  <span className="inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-400">
+                    <CircuitBoard className="h-3 w-3" /> Hardware
+                  </span>
+                ) : project.has_github !== false ? (
+                  <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-400" title={project.github_url || "GitHub link active"}>
+                    <Github className="h-3 w-3" /> GitHub
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded bg-white/5 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                    No GitHub
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => toggleFeatured(project.id, project.featured)}
@@ -643,6 +695,46 @@ export function ProjectsTab() {
                     <p className="text-[10px] text-muted-foreground mt-1">Uploads to portfolio-assets bucket</p>
                   </div>
                 </div>
+              </div>
+
+              {/* GitHub Repository Settings */}
+              <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Github className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">GitHub Repository</span>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer text-xs">
+                    <input
+                      type="checkbox"
+                      id="has_github"
+                      {...register("has_github")}
+                      className="rounded border-white/10 bg-white/[0.03] text-primary focus:ring-primary/60"
+                    />
+                    <span className="font-medium text-foreground">Enable GitHub Link</span>
+                  </label>
+                </div>
+
+                {watchHasGithub ? (
+                  <div className="space-y-1.5 pt-1">
+                    <label className="text-xs text-muted-foreground">Custom Repository URL</label>
+                    <input
+                      {...register("github_url")}
+                      type="url"
+                      placeholder="https://github.com/Ganeshkaithoju/repository-name"
+                      className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      Leave empty to use your main profile GitHub link, or enter a specific project repository URL.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground/80 bg-white/[0.02] rounded px-2.5 py-1.5 border border-dashed border-white/10">
+                    {watchIsEmbedded 
+                      ? "GitHub link is disabled. On the portfolio, this project will display a 'Hardware Build' badge instead."
+                      : "GitHub link is disabled for this project and will not appear on the portfolio card."}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">

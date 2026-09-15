@@ -104,6 +104,9 @@ const PROJECTS = [
     icon: Leaf,
     accent: "from-emerald-400 to-teal-500",
     embedded: true,
+    is_embedded: true,
+    has_github: false,
+    github_url: "",
   },
   {
     title: "Spoonie — Self-Stabilizing Feeding Spoon",
@@ -113,6 +116,9 @@ const PROJECTS = [
     icon: Utensils,
     accent: "from-amber-400 to-orange-500",
     embedded: true,
+    is_embedded: true,
+    has_github: false,
+    github_url: "",
   },
   {
     title: "Hospital Management System",
@@ -121,6 +127,10 @@ const PROJECTS = [
     tech: ["React", "Spring Boot", "MySQL"],
     icon: Hospital,
     accent: "from-sky-400 to-indigo-500",
+    embedded: false,
+    is_embedded: false,
+    has_github: true,
+    github_url: "",
   },
   {
     title: "Subscription Management System",
@@ -129,6 +139,10 @@ const PROJECTS = [
     tech: ["React.js", "Node.js"],
     icon: CreditCard,
     accent: "from-fuchsia-400 to-purple-500",
+    embedded: false,
+    is_embedded: false,
+    has_github: true,
+    github_url: "",
   },
 ];
 
@@ -943,11 +957,35 @@ function Projects() {
                 </div>
                 <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-4 text-sm">
                   <span className="inline-flex items-center gap-1 text-muted-foreground"><Sparkles aria-hidden="true" className="h-3.5 w-3.5" /> Academic Project</span>
-                  {p.embedded ? (
-                    <span className="inline-flex items-center gap-1 text-muted-foreground/80"><CircuitBoard aria-hidden="true" className="h-3.5 w-3.5" /> Hardware Build</span>
-                  ) : (
-                    <a href={githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded" aria-label={`View ${p.title} related work on GitHub`}>GitHub <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" /></a>
-                  )}
+                  {(() => {
+                    const isEmbedded = Boolean(p.is_embedded ?? p.embedded);
+                    const showGithub = p.has_github !== undefined ? Boolean(p.has_github) : !isEmbedded;
+                    const projectGithubUrl = p.github_url?.trim() ? p.github_url.trim() : githubUrl;
+
+                    if (showGithub) {
+                      return (
+                        <a
+                          href={projectGithubUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
+                          aria-label={`View ${p.title} related work on GitHub`}
+                        >
+                          GitHub <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
+                        </a>
+                      );
+                    }
+
+                    if (isEmbedded) {
+                      return (
+                        <span className="inline-flex items-center gap-1 text-muted-foreground/80">
+                          <CircuitBoard aria-hidden="true" className="h-3.5 w-3.5" /> Hardware Build
+                        </span>
+                      );
+                    }
+
+                    return null;
+                  })()}
                 </div>
               </div>
             </motion.article>

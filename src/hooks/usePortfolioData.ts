@@ -35,10 +35,17 @@ export function usePortfolioData() {
         console.error("Error fetching projects:", error);
         return [];
       }
-      return data.map(p => ({
-        ...p,
-        icon: iconMap[p.icon_name || 'Code2'] || Code2
-      }));
+      return data.map(p => {
+        const isEmbedded = p.is_embedded ?? p.embedded ?? false;
+        return {
+          ...p,
+          embedded: isEmbedded,
+          is_embedded: isEmbedded,
+          has_github: p.has_github !== undefined ? p.has_github : !isEmbedded,
+          github_url: p.github_url || null,
+          icon: iconMap[p.icon_name || 'Code2'] || Code2
+        };
+      });
     }
   });
 
