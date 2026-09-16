@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { PortfolioChatBot } from "../components/PortfolioChatBot";
 import { Toaster } from "@/components/ui/sonner";
 import { ThreeDBackground } from "@/components/ui/three-d-background";
+import { StaticRobotScene } from "@/components/ui/static-robot-scene";
 
 function NotFoundComponent() {
   return (
@@ -116,6 +117,7 @@ function RootComponent() {
       <ThreeDBackground />
       <Outlet />
       <PortfolioChatBot />
+      <StaticRobotScene />
       <Toaster />
     </QueryClientProvider>
   );

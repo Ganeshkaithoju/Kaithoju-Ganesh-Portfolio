@@ -4,14 +4,14 @@ import {
   Layers, Server, Database, Terminal, CircuitBoard, Wrench, 
   Leaf, Utensils, Hospital, CreditCard, GraduationCap, Code2, 
   Rocket, Briefcase, HardDrive, Globe, Cpu, Zap, Sparkles, 
-  Shield, Award 
+  Shield, Award, Bot, Brain, Star, Flame, Box, Activity, Compass
 } from "lucide-react";
 
 export const iconMap: Record<string, any> = {
-  Layers, Server, Database, Terminal, CircuitBoard, Wrench,
-  Leaf, Utensils, Hospital, CreditCard, GraduationCap, Code2,
-  Rocket, Briefcase, HardDrive, Globe, Cpu, Zap, Sparkles,
-  Shield, Award
+  Layers, Server, Database, Terminal, CircuitBoard, Wrench, 
+  Leaf, Utensils, Hospital, CreditCard, GraduationCap, Code2, 
+  Rocket, Briefcase, HardDrive, Globe, Cpu, Zap, Sparkles, 
+  Shield, Award, Bot, Brain, Star, Flame, Box, Activity, Compass
 };
 
 export function usePortfolioData() {

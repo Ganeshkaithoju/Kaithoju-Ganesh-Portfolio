@@ -102,6 +102,7 @@ export function VerticalTabs({
   const [isPaused, setIsPaused] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const listContainerRef = useRef<HTMLDivElement>(null);
 
   // Keep index within bounds if items change dynamically
   useEffect(() => {
@@ -110,13 +111,66 @@ export function VerticalTabs({
     }
   }, [activeItems.length, activeIndex]);
 
-  // Smooth scroll active tab into view in the scrollable list
+  // Smooth scroll container so active tab is always fully visible (handles bottom & top loop)
+  const scrollToActiveTab = useCallback(
+    (behavior: ScrollBehavior = "smooth") => {
+      const container = listContainerRef.current;
+      const activeBtn = tabRefs.current[activeIndex];
+      if (!container || !activeBtn) return;
+
+      // When looping back to the very first card: auto-scroll container all the way back to top
+      if (activeIndex === 0) {
+        container.scrollTo({ top: 0, behavior });
+        return;
+      }
+
+      // When reaching the last card (bottom card): auto-scroll container to bottom to reveal full card
+      if (activeIndex === activeItems.length - 1) {
+        container.scrollTo({ top: container.scrollHeight, behavior });
+        return;
+      }
+
+      // Compute exact relative position of active card within the container's scroll canvas
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = activeBtn.getBoundingClientRect();
+      const relativeTop = btnRect.top - containerRect.top + container.scrollTop;
+      const relativeBottom = relativeTop + btnRect.height;
+
+      const padding = 20; // Breathing room inside container viewport
+
+      // If bottom of the expanded card is below the visible bottom edge of the container
+      if (relativeBottom > container.scrollTop + container.clientHeight - padding) {
+        const targetScroll = relativeBottom - container.clientHeight + padding;
+        container.scrollTo({
+          top: Math.min(container.scrollHeight - container.clientHeight, targetScroll),
+          behavior,
+        });
+      }
+      // If top of card is scrolled above the visible top edge of the container
+      else if (relativeTop < container.scrollTop + padding) {
+        const targetScroll = Math.max(0, relativeTop - padding);
+        container.scrollTo({
+          top: targetScroll,
+          behavior,
+        });
+      }
+    },
+    [activeIndex, activeItems.length]
+  );
+
+  // Trigger smooth scroll immediately and across the accordion expansion lifecycle
   useEffect(() => {
-    const activeBtn = tabRefs.current[activeIndex];
-    if (activeBtn) {
-      activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }, [activeIndex]);
+    scrollToActiveTab("smooth");
+
+    // Re-check as accordion expands
+    const timer1 = setTimeout(() => scrollToActiveTab("smooth"), 120);
+    const timer2 = setTimeout(() => scrollToActiveTab("smooth"), 320);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [activeIndex, scrollToActiveTab]);
 
   const handleNext = useCallback(() => {
     setDirection(1);
@@ -197,7 +251,12 @@ export function VerticalTabs({
             )}
 
             {/* Scrollable Tabs List: Fully responsive individual frosted dark cards */}
-            <div className="flex flex-col space-y-2.5 sm:space-y-3 max-h-[480px] sm:max-h-[540px] lg:max-h-[640px] overflow-y-auto overflow-x-hidden pr-1.5 scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+            <div
+              ref={listContainerRef}
+              className="relative flex flex-col space-y-2.5 sm:space-y-3 max-h-[480px] sm:max-h-[540px] lg:max-h-[640px] overflow-y-auto overflow-x-hidden pr-1.5 scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20 scroll-smooth"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
               {activeItems.map((item, index) => {
                 const isActive = activeIndex === index;
                 // Formatted sequence number: strictly ordered 01, 02, 03, 04...
@@ -289,6 +348,7 @@ export function VerticalTabs({
                               duration: 0.3,
                               ease: [0.23, 1, 0.32, 1],
                             }}
+                            onAnimationComplete={() => scrollToActiveTab("smooth")}
                             className="overflow-hidden"
                           >
                             {/* Total description displayed in full during slide preview */}

@@ -104,15 +104,17 @@
 }
 
 @utility glass {
-  background: oklch(0.2 0.02 265 / 0.4);
-  backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid oklch(1 0 0 / 0.08);
+  background: rgba(12, 14, 20, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 @utility glass-strong {
-  background: oklch(0.18 0.025 265 / 0.7);
+  background: rgba(9, 11, 16, 0.88);
   backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid oklch(1 0 0 / 0.1);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 @utility glow {
@@ -120,9 +122,11 @@
 }
 
 @utility card-premium {
-  background: linear-gradient(180deg, oklch(0.2 0.025 265 / 0.6), oklch(0.16 0.02 260 / 0.6));
-  border: 1px solid oklch(1 0 0 / 0.08);
-  box-shadow: var(--shadow-card);
+  background: linear-gradient(180deg, rgba(14, 16, 22, 0.85), rgba(9, 10, 15, 0.9));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-xl);
 }
 

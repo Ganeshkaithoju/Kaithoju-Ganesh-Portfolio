@@ -1,50 +1,39 @@
 "use client";
 
-import { CircularCarousel } from "@/components/ui/circular-carousel";
+import { SplineScene } from "@/components/ui/splite";
+import { Card } from "@/components/ui/card";
+import { Spotlight } from "@/components/ui/spotlight";
 
-const items = [
-  {
-    id: "1",
-    title: "Nebula Engine",
-    description: "Real-time rendering pipeline built for immersive 3D worlds.",
-    tag: "Graphics",
-  },
-  {
-    id: "2",
-    title: "Quantum Sync",
-    description: "Instant state replication across every connected device.",
-    tag: "Realtime",
-  },
-  {
-    id: "3",
-    title: "Aurora Analytics",
-    description: "Insightful dashboards that surface trends as they happen.",
-    tag: "Data",
-  },
-  {
-    id: "4",
-    title: "Pulse Notifications",
-    description: "Timely, contextual alerts that keep users in the loop.",
-    tag: "Messaging",
-  },
-  {
-    id: "5",
-    title: "Vault Security",
-    description: "End-to-end encryption with zero-trust access controls.",
-    tag: "Security",
-  },
-  {
-    id: "6",
-    title: "Forge CI",
-    description: "Blazing-fast build and deploy pipelines out of the box.",
-    tag: "DevOps",
-  },
-];
-
-export default function CircularCarouselDemo() {
+export function SplineSceneBasic() {
   return (
-    <div className="flex min-h-[480px] w-full items-center justify-center bg-zinc-950 p-8">
-      <CircularCarousel items={items} />
-    </div>
+    <Card className="w-full h-[500px] bg-black/[0.96] relative overflow-hidden">
+      <Spotlight
+        className="-top-40 left-0 md:left-60 md:-top-20"
+        fill="white"
+      />
+
+      <div className="flex h-full">
+        {/* Left content */}
+        <div className="flex-1 p-8 relative z-10 flex flex-col justify-center">
+          <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400">
+            Interactive 3D
+          </h1>
+          <p className="mt-4 text-neutral-300 max-w-lg">
+            Bring your UI to life with beautiful 3D scenes. Create immersive experiences
+            that capture attention and enhance your design.
+          </p>
+        </div>
+
+        {/* Right content */}
+        <div className="flex-1 relative">
+          <SplineScene
+            scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+            className="w-full h-full"
+          />
+        </div>
+      </div>
+    </Card>
   );
 }
+
+export default SplineSceneBasic;

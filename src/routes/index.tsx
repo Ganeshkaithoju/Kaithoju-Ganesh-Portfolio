@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback, type ReactNode } from "react";
 import { motion, useScroll, useSpring, useTransform, useMotionValue, AnimatePresence, useInView } from "framer-motion";
 import {
-  Github, Linkedin, Mail, Phone, MapPin, Download, ArrowUpRight, ArrowRight, Code2, Server, Database, Wrench, Brain, Sparkles, Rocket, Award, GraduationCap, Briefcase, ExternalLink, Send, Menu, X, Sun, Moon, Terminal, Layers, Cpu, Globe, Shield, Zap, Star, ChevronDown, Quote, HardDrive, CircuitBoard, Leaf, Utensils, Hospital, CreditCard, CheckCircle2, LayoutGrid, GalleryVerticalEnd,
+  Github, Linkedin, Mail, Phone, MapPin, Download, ArrowUpRight, ArrowRight, Code2, Server, Database, Wrench, Brain, Sparkles, Rocket, Award, GraduationCap, Briefcase, ExternalLink, Send, Menu, X, Sun, Moon, Terminal, Layers, Cpu, Globe, Shield, Zap, Star, ChevronDown, ChevronLeft, ChevronRight, Quote, HardDrive, CircuitBoard, Leaf, Utensils, Hospital, CreditCard, CheckCircle2, LayoutGrid, GalleryVerticalEnd,
 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -248,13 +248,13 @@ function Counter({ to, suffix = "" }: { to: string; suffix?: string }) {
   return <span ref={ref}>{val}{suffix}</span>;
 }
 
-function SectionHeading({ eyebrow, title, subtitle, id }: { eyebrow: string; title: ReactNode; subtitle?: string; id?: string }) {
+function SectionHeading({ eyebrow, title, subtitle, id, titleClassName }: { eyebrow: string; title: ReactNode; subtitle?: string; id?: string; titleClassName?: string }) {
   return (
-    <div className="mx-auto mb-14 max-w-3xl text-center">
+    <div className="mx-auto mb-14 max-w-4xl text-center">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-primary">
         <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> {eyebrow}
       </motion.div>
-      <motion.h2 id={id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.05 }} className="mt-5 text-4xl font-bold sm:text-5xl md:text-6xl">
+      <motion.h2 id={id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.05 }} className={`mt-5 font-bold ${titleClassName || "text-4xl sm:text-5xl md:text-6xl"}`}>
         {title}
       </motion.h2>
       {subtitle && (
@@ -485,22 +485,34 @@ function Navbar({ navOpen, setNavOpen, dark, setDark }: { navOpen: boolean; setN
 /* ============================================================
    HERO
    ============================================================ */
-function TypingText({ words }: { words: string[] }) {
-  const [i, setI] = useState(0);
-  const [text, setText] = useState("");
-  const [del, setDel] = useState(false);
+function RotatingRoles({ words, interval = 4500 }: { words: string[]; interval?: number }) {
+  const [index, setIndex] = useState(0);
+
   useEffect(() => {
-    const cur = words[i % words.length];
-    const speed = del ? 40 : 80;
-    const t = setTimeout(() => {
-      if (!del && text === cur) { setTimeout(() => setDel(true), 1400); return; }
-      if (del && text === "") { setDel(false); setI(i + 1); return; }
-      setText(del ? cur.slice(0, text.length - 1) : cur.slice(0, text.length + 1));
-    }, speed);
-    return () => clearTimeout(t);
-  }, [text, del, i, words]);
+    if (!words || words.length <= 1) return;
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % words.length);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [words, interval]);
+
+  const currentWord = words[index % words.length] || "";
+
   return (
-    <span className="text-gradient">{text}<span aria-hidden="true" className="inline-block w-[2px] translate-y-1 animate-pulse bg-primary" style={{ height: "1em" }} /></span>
+    <span className="relative inline-flex items-baseline overflow-hidden align-baseline text-left">
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={currentWord}
+          initial={{ y: "100%", opacity: 0 }}
+          animate={{ y: "0%", opacity: 1 }}
+          exit={{ y: "-100%", opacity: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="text-gradient inline-block whitespace-nowrap leading-[inherit]"
+        >
+          {currentWord}
+        </motion.span>
+      </AnimatePresence>
+    </span>
   );
 }
 
@@ -541,22 +553,30 @@ function Hero() {
     role: "Software & Full-Stack Dev",
     stack: ["React", "Node", "Python", "Java", "Spring Boot", "MySQL"],
     focus: "reliable · elegant · fast",
-    cgpa: 8.42,
+    cgpa: 8.44,
     now: "Intern @ Lumen — Backup & Restore",
-    shipping: true
+    badge_bottom: "Gen Ai",
+    badge_bottom_icon: "Bot",
+    shipping: true,
+    image_url: "https://jdictbtlalwlmfvdddiv.supabase.co/storage/v1/object/public/portfolio-assets/uploads/ganesh_portrait.jpg"
   };
 
+  const heroImageUrl = (codeCard as any)?.image_url || (siteSettings as any)?.hero_image_url || "https://jdictbtlalwlmfvdddiv.supabase.co/storage/v1/object/public/portfolio-assets/uploads/ganesh_portrait.jpg";
+
   return (
-    <section id="home" aria-labelledby="hero-title" className="relative flex min-h-dvh items-center px-4 pt-32 sm:px-6">
+    <section id="home" aria-labelledby="hero-title" className="relative flex min-h-dvh flex-col justify-center px-4 pt-28 pb-16 sm:px-6 sm:pt-36 sm:pb-24 lg:pt-32 lg:pb-28">
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
         <div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.4 }} className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs">
             <span aria-hidden="true" className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-primary" /></span>
             {codeCard.now}
           </motion.div>
-          <motion.h1 id="hero-title" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.5 }} className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-[5.5rem]">
+          <motion.h1 id="hero-title" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.5 }} className="mt-6 font-display text-5xl font-bold leading-[1.08] tracking-tight sm:text-6xl md:text-7xl lg:text-[5.5rem]">
             Hi, I'm <span className="text-gradient">{heroName}</span>.<br />
-            I build <TypingText words={heroSubtitles} />
+            <span className="inline-flex flex-wrap items-baseline gap-x-[0.28em]">
+              <span>I build</span>
+              <RotatingRoles words={heroSubtitles} />
+            </span>
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.7 }} className="mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
             {heroBio}
@@ -583,35 +603,84 @@ function Hero() {
           </motion.div>
         </div>
 
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.9, delay: 1.6 }} className="relative mx-auto aspect-square w-full max-w-md" aria-hidden="true">
-          <div className="absolute inset-0 rounded-3xl animate-gradient" style={{ background: "conic-gradient(from 0deg, oklch(0.85 0.18 165 / 0.4), oklch(0.72 0.2 295 / 0.4), oklch(0.7 0.18 220 / 0.4), oklch(0.85 0.18 165 / 0.4))", filter: "blur(40px)" }} />
-          <motion.div animate={{ rotateY: [0, 6, -6, 0], rotateX: [0, -4, 4, 0] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} className="relative h-full w-full rounded-3xl card-premium p-6" style={{ transformStyle: "preserve-3d" }}>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <div className="flex gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-400/70" /><span className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" /><span className="h-2.5 w-2.5 rounded-full bg-green-400/70" /></div>
-              <span className="font-mono">ganesh.tsx</span>
+        {/* Hero Portrait Card with Interactive Hover Glow */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.9, delay: 1.6 }}
+          className="relative mx-auto w-full max-w-sm sm:max-w-md group"
+          aria-hidden="true"
+        >
+          {/* Ambient colorful backdrop glow that blooms brighter on hover */}
+          <div
+            className="absolute -inset-1 rounded-[2.2rem] animate-gradient opacity-60 blur-2xl transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+            style={{
+              background:
+                "conic-gradient(from 0deg, oklch(0.85 0.18 165 / 0.5), oklch(0.72 0.2 295 / 0.45), oklch(0.7 0.18 220 / 0.45), oklch(0.85 0.18 165 / 0.5))",
+            }}
+          />
+
+          <motion.div
+            animate={{ rotateY: [0, 5, -5, 0], rotateX: [0, -3, 3, 0] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            className="relative w-full rounded-3xl card-premium p-4 sm:p-5 transition-all duration-500 group-hover:border-primary/50 group-hover:shadow-[0_20px_60px_-15px_oklch(0.85_0.18_165/0.25)]"
+            style={{ transformStyle: "preserve-3d" }}
+          >
+            {/* macOS Window Header Bar */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 text-xs text-muted-foreground">
+              <div className="flex gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
+                <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
+                <span className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
+              </div>
+              <span className="font-mono text-[11px] text-muted-foreground/90 flex items-center gap-1.5 font-medium">
+                <Sparkles className="h-3 w-3 text-primary" /> ganesh.png
+              </span>
             </div>
-            <pre className="mt-4 overflow-hidden font-mono text-[13px] leading-relaxed">
-{`const dev = ${JSON.stringify(codeCard, null, 2)};`}
-            </pre>
-            <div className="mt-6 grid grid-cols-3 gap-3">
-              {[Code2, Server, HardDrive].map((Icon, i) => (
-                <motion.div key={i} whileHover={{ y: -4 }} className="glass grid aspect-square place-items-center rounded-xl">
-                  <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
-                </motion.div>
-              ))}
+
+            {/* Portrait Image with Interactive Brightness Hover */}
+            <div className="relative mt-3 w-full aspect-[4/5] overflow-hidden rounded-2xl bg-black/60 shadow-inner">
+              <img
+                src={heroImageUrl}
+                alt={heroName || "Kaithoju Ganesh"}
+                className="h-full w-full object-cover object-top transition-all duration-500 ease-out brightness-90 contrast-[1.05] group-hover:brightness-125 group-hover:contrast-115 group-hover:scale-[1.03]"
+                loading="eager"
+              />
+              {/* Subtle bottom gradient to blend image into dark card frame */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-500 group-hover:opacity-40" />
             </div>
-            <div className="absolute -right-4 -top-4 animate-float glass rounded-2xl px-3 py-2 text-xs">
-              <div className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> CGPA {codeCard.cgpa !== undefined ? codeCard.cgpa : "8.42"}</div>
+
+            {/* Top-Right Floating Badge: CGPA */}
+            <div className="absolute -right-3 -top-3 animate-float glass rounded-2xl px-3.5 py-2 text-xs shadow-xl backdrop-blur-md border border-white/15">
+              <div className="flex items-center gap-1.5 font-medium text-foreground">
+                <Star className="h-3.5 w-3.5 text-primary fill-primary/30" aria-hidden="true" />
+                <span>CGPA <strong className="text-primary">{codeCard.cgpa !== undefined ? codeCard.cgpa : "8.44"}</strong></span>
+              </div>
             </div>
-            <div className="absolute -bottom-4 -left-4 animate-float glass rounded-2xl px-3 py-2 text-xs" style={{ animationDelay: "1.5s" }}>
-              <div className="flex items-center gap-1.5"><HardDrive className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> {codeCard.badge_bottom || codeCard.role || "Backup & Restore"}</div>
-            </div>
+
+            {/* Bottom-Left Floating Badge: Role & Dynamic Icon */}
+            {(() => {
+              const badgeIconName = (codeCard as any)?.badge_bottom_icon || (codeCard as any)?.icon || "HardDrive";
+              const BadgeIcon = iconMap[badgeIconName] || HardDrive;
+              const badgeText = (codeCard as any)?.badge_bottom || codeCard.now || "Intern @ Lumen — Backup & Restore";
+              return (
+                <div className="absolute -bottom-3 -left-3 animate-float glass rounded-2xl px-3.5 py-2 text-xs shadow-xl backdrop-blur-md border border-white/15" style={{ animationDelay: "1.5s" }}>
+                  <div className="flex items-center gap-1.5 font-medium text-foreground">
+                    <BadgeIcon className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+                    <span>{badgeText}</span>
+                  </div>
+                </div>
+              );
+            })()}
           </motion.div>
         </motion.div>
       </div>
-      <motion.div aria-hidden="true" animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }} className="absolute bottom-6 left-1/2 -translate-x-1/2 text-muted-foreground">
-        <ChevronDown className="h-6 w-6" />
-      </motion.div>
+
+      <div className="mt-10 hidden sm:flex justify-center text-muted-foreground">
+        <motion.div aria-hidden="true" animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+          <ChevronDown className="h-6 w-6" />
+        </motion.div>
+      </div>
     </section>
   );
 }
@@ -624,17 +693,17 @@ function MarqueeStrip() {
   if (sections && section && !section.is_visible) return null;
 
   return (
-    <div aria-hidden="true" className="relative my-12 overflow-hidden py-6">
-      <div className="mx-auto max-w-6xl border-y border-border/60 py-6 overflow-hidden">
+    <section aria-label="Technologies Marquee" className="relative w-full py-8 sm:py-12 my-6 sm:my-10 overflow-hidden z-10">
+      <div className="mx-auto max-w-6xl border-y border-border/60 bg-background/25 backdrop-blur-[2px] py-5 sm:py-7 overflow-hidden">
         <div className="flex animate-marquee whitespace-nowrap">
           {[...items, ...items, ...items, ...items].map((t, i) => (
-            <span key={i} className="mx-8 font-display text-2xl font-medium text-muted-foreground sm:text-3xl">
+            <span key={i} className="mx-6 sm:mx-8 font-display text-2xl font-medium text-muted-foreground sm:text-3xl">
               <span className="text-gradient">✦</span> {t}
             </span>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -655,7 +724,7 @@ function About() {
   ];
 
   return (
-    <section id="about" aria-labelledby="about-title" className="relative px-4 py-24 sm:px-6">
+    <section id="about" aria-labelledby="about-title" className="relative px-4 pt-12 pb-24 sm:px-6 sm:pt-16 lg:pt-20">
       <div className="mx-auto max-w-6xl">
         <SectionHeading 
           id="about-title" 
@@ -698,7 +767,7 @@ function Achievements() {
           eyebrow={section?.title || "Achievements"}
           title={section?.subtitle ? <>{section.subtitle}</> : <>Key <span className="text-gradient">Milestones & Numbers</span></>}
         />
-        <div className="grid grid-cols-2 gap-4 rounded-3xl border border-border/60 bg-background/50 p-6 shadow-sm backdrop-blur-xl md:grid-cols-4 md:p-8">
+        <div className="grid grid-cols-2 gap-4 rounded-3xl border border-white/10 bg-zinc-950/40 p-6 shadow-2xl backdrop-blur-md md:grid-cols-4 md:p-8">
           {items.map((s: any, i: number) => (
             <motion.div
               key={s.label || s.title || i}
@@ -1146,6 +1215,7 @@ function WhyHire() {
           id="why-title" 
           eyebrow={section?.title || "Why hire me"} 
           title={section?.subtitle ? <>{section.subtitle}</> : <>Reasons I might be a <span className="text-gradient">good fit</span></>} 
+          titleClassName="text-2xl sm:text-3xl md:text-4xl lg:text-[2.65rem] sm:whitespace-nowrap"
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {items.map((w, i) => (
@@ -1168,47 +1238,206 @@ function Certifications() {
   const { certifications, sections } = usePortfolioData();
   const items = certifications?.length ? certifications : CERTIFICATIONS;
 
-  const section = sections?.find(s => s.id === 'certifications');
+  const section = sections?.find((s) => s.id === "certifications");
   if (sections && section && !section.is_visible) return null;
+
+  // Chunk certifications into groups of exactly 4 stacked items
+  const pageSize = 4;
+  const pages = useMemo(() => {
+    const list: any[][] = [];
+    for (let i = 0; i < items.length; i += pageSize) {
+      list.push(items.slice(i, i + pageSize));
+    }
+    return list.length > 0 ? list : [[]];
+  }, [items]);
+
+  const [page, setPage] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Keep page index within bounds if data changes
+  useEffect(() => {
+    if (page >= pages.length) setPage(0);
+  }, [pages.length, page]);
+
+  const nextPage = useCallback(() => {
+    setDirection(1);
+    setPage((prev) => (prev + 1) % pages.length);
+  }, [pages.length]);
+
+  const prevPage = useCallback(() => {
+    setDirection(-1);
+    setPage((prev) => (prev - 1 + pages.length) % pages.length);
+  }, [pages.length]);
+
+  // Auto-scroll every 8.5 seconds if multiple pages exist
+  useEffect(() => {
+    if (isPaused || pages.length <= 1) return;
+    const timer = setInterval(() => {
+      nextPage();
+    }, 8500);
+    return () => clearInterval(timer);
+  }, [isPaused, pages.length, nextPage]);
+
+  const currentCerts = pages[page] || [];
+
+  const slideVariants = {
+    enter: (dir: number) => ({
+      y: dir > 0 ? 30 : -30,
+      opacity: 0,
+    }),
+    center: {
+      y: 0,
+      opacity: 1,
+    },
+    exit: (dir: number) => ({
+      y: dir > 0 ? -30 : 30,
+      opacity: 0,
+    }),
+  };
 
   return (
     <section aria-labelledby="certs-title" className="relative px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-4xl">
-        <SectionHeading 
-          id="certs-title" 
-          eyebrow={section?.title || "Certifications"} 
-          title={section?.subtitle ? <>{section.subtitle}</> : <>Credentials &amp; <span className="text-gradient">learning</span></>} 
+        <SectionHeading
+          id="certs-title"
+          eyebrow={section?.title || "Certifications"}
+          title={section?.subtitle ? <>{section.subtitle}</> : <>Credentials &amp; <span className="text-gradient">learning</span></>}
         />
-        <ul className="grid grid-cols-1 gap-5 list-none">
-          {items.map((c: any, i: number) => (
-            <motion.li key={c.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.05 }} className="card-premium flex flex-col sm:flex-row sm:items-center gap-5 p-6">
-              <div className="flex items-center gap-5 flex-1">
-                {c.image_url ? (
-                  <div aria-hidden="true" className="shrink-0 h-16 w-16 overflow-hidden rounded-xl border border-white/10 bg-black/40">
-                    {c.media_type === 'video' ? (
-                      <ViewportVideo src={c.image_url} className="h-full w-full object-cover" />
-                    ) : (
-                      <img src={c.image_url} alt={c.title} className="h-full w-full object-cover" />
+
+        {/* Carousel Showcase Container with Frosted Dark Barrier */}
+        <div
+          className="relative rounded-3xl p-4 sm:p-6 md:p-8 bg-zinc-950/40 border border-white/10 backdrop-blur-md shadow-2xl"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {/* Header Bar: Credentials Count & Navigation Controls */}
+          <div className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <span className="font-mono text-xs text-primary font-semibold tracking-wider uppercase">
+                {items.length} {items.length === 1 ? "Credential" : "Credentials"}
+              </span>
+              {pages.length > 1 && (
+                <span className="rounded-full bg-white/10 px-2.5 py-0.5 font-mono text-[11px] text-white/80 border border-white/5">
+                  Page {page + 1} of {pages.length}
+                </span>
+              )}
+            </div>
+
+            {pages.length > 1 && (
+              <div className="flex items-center gap-2">
+                {/* Pagination Dots */}
+                <div className="hidden sm:flex items-center gap-1.5 mr-2">
+                  {pages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setDirection(idx > page ? 1 : -1);
+                        setPage(idx);
+                      }}
+                      className={`h-2 rounded-full transition-all cursor-pointer ${
+                        idx === page ? "w-6 bg-primary" : "w-2 bg-white/20 hover:bg-white/40"
+                      }`}
+                      aria-label={`Go to page ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={prevPage}
+                  className="grid h-9 w-9 place-items-center rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-white/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  aria-label="Previous 4 certifications"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={nextPage}
+                  className="grid h-9 w-9 place-items-center rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-white/90 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  aria-label="Next 4 certifications"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Stacked 4 Cards View: Fixed height equal to 4 cards, no overlap, no size reduction */}
+          <div className="relative min-h-[460px] sm:min-h-[496px]">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={page}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="flex flex-col space-y-4"
+              >
+                {currentCerts.map((c: any, i: number) => (
+                  <div
+                    key={(c.title || c.name || "") + i}
+                    className="card-premium flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 transition-all duration-300 shrink-0 min-h-[96px] sm:min-h-[104px]"
+                  >
+                    <div className="flex items-center gap-4 sm:gap-5 flex-1 min-w-0">
+                      {c.image_url ? (
+                        <div aria-hidden="true" className="shrink-0 h-14 w-14 sm:h-16 sm:w-16 overflow-hidden rounded-xl border border-white/10 bg-black/40">
+                          {c.media_type === "video" ? (
+                            <ViewportVideo src={c.image_url} className="h-full w-full object-cover" />
+                          ) : (
+                            <img src={c.image_url} alt={c.title} className="h-full w-full object-cover" loading="lazy" />
+                          )}
+                        </div>
+                      ) : (
+                        <div aria-hidden="true" className="grid h-12 w-12 sm:h-14 sm:w-14 shrink-0 place-items-center rounded-xl" style={{ background: "var(--gradient-text)" }}>
+                          {(() => {
+                            const IconComponent = c.icon || (c.icon_name && iconMap[c.icon_name]) || Award;
+                            return <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />;
+                          })()}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-display text-base sm:text-lg font-semibold text-white truncate sm:text-wrap">
+                          {c.title || c.name}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                          {c.platform || c.issuer} · Issued {c.date}
+                        </p>
+                      </div>
+                    </div>
+                    {c.url && (
+                      <a
+                        href={c.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-primary hover:gap-2 transition-all font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded shrink-0 self-start sm:self-center"
+                        aria-label={`View ${c.title} credential`}
+                      >
+                        View Credential <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
+                      </a>
                     )}
                   </div>
-                ) : (
-                  <div aria-hidden="true" className="grid h-14 w-14 shrink-0 place-items-center rounded-xl" style={{ background: "var(--gradient-text)" }}>
-                    <c.icon className="h-6 w-6 text-primary-foreground" />
-                  </div>
-                )}
-                <div>
-                  <h3 className="font-display text-lg font-semibold">{c.title || c.name}</h3>
-                  <p className="text-sm text-muted-foreground">{c.platform || c.issuer} · Issued {c.date}</p>
-                </div>
-              </div>
-              {c.url && (
-                <a href={c.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded mt-2 sm:mt-0" aria-label={`View ${c.title} credential`}>
-                  View Credential <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
-                </a>
-              )}
-            </motion.li>
-          ))}
-        </ul>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Progress Bar for Auto-Play (when multiple pages exist) */}
+          {pages.length > 1 && (
+            <div className="mt-4 h-[2px] w-full rounded-full bg-white/10 overflow-hidden">
+              <motion.div
+                key={`cert-prog-${page}-${isPaused}`}
+                className="h-full bg-primary origin-left"
+                initial={{ width: "0%" }}
+                animate={isPaused ? { width: "0%" } : { width: "100%" }}
+                transition={{ duration: 8.5, ease: "linear" }}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
