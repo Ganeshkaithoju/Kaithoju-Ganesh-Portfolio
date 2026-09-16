@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { PortfolioChatBot } from "../components/PortfolioChatBot";
 import { Toaster } from "@/components/ui/sonner";
+import { ThreeDBackground } from "@/components/ui/three-d-background";
 
 function NotFoundComponent() {
   return (
@@ -112,6 +113,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
+      <ThreeDBackground />
       <Outlet />
       <PortfolioChatBot />
       <Toaster />

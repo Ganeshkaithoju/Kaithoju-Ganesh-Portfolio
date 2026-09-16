@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useScroll, useSpring, useTransform, useMotionValue, AnimatePresence, useInView } from "framer-motion";
 import {
-  Github, Linkedin, Mail, Phone, MapPin, Download, ArrowUpRight, ArrowRight, Code2, Server, Database, Wrench, Brain, Sparkles, Rocket, Award, GraduationCap, Briefcase, ExternalLink, Send, Menu, X, Sun, Moon, Terminal, Layers, Cpu, Globe, Shield, Zap, Star, ChevronDown, Quote, HardDrive, CircuitBoard, Leaf, Utensils, Hospital, CreditCard, CheckCircle2,
+  Github, Linkedin, Mail, Phone, MapPin, Download, ArrowUpRight, ArrowRight, Code2, Server, Database, Wrench, Brain, Sparkles, Rocket, Award, GraduationCap, Briefcase, ExternalLink, Send, Menu, X, Sun, Moon, Terminal, Layers, Cpu, Globe, Shield, Zap, Star, ChevronDown, Quote, HardDrive, CircuitBoard, Leaf, Utensils, Hospital, CreditCard, CheckCircle2, LayoutGrid, GalleryVerticalEnd,
 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { sendContactNotification } from "@/lib/contact-notification";
 import { PublicComments } from "@/components/PublicComments";
 import { usePortfolioData, iconMap } from "@/hooks/usePortfolioData";
+import { VerticalTabs } from "@/components/ui/vertical-tabs";
+import { CircularCarousel } from "@/components/ui/circular-carousel";
 
 export const Route = createFileRoute("/")({ component: PortfolioPage });
 
@@ -107,6 +109,8 @@ const PROJECTS = [
     is_embedded: true,
     has_github: false,
     github_url: "",
+    image_url: "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=1200&q=80",
+    media_type: "image",
   },
   {
     title: "Spoonie — Self-Stabilizing Feeding Spoon",
@@ -119,6 +123,8 @@ const PROJECTS = [
     is_embedded: true,
     has_github: false,
     github_url: "",
+    image_url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+    media_type: "image",
   },
   {
     title: "Hospital Management System",
@@ -131,6 +137,8 @@ const PROJECTS = [
     is_embedded: false,
     has_github: true,
     github_url: "",
+    image_url: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80",
+    media_type: "image",
   },
   {
     title: "Subscription Management System",
@@ -143,6 +151,8 @@ const PROJECTS = [
     is_embedded: false,
     has_github: true,
     github_url: "",
+    image_url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+    media_type: "image",
   },
 ];
 
@@ -185,10 +195,10 @@ const ACHIEVEMENTS = [
 ];
 
 const CERTIFICATIONS = [
-  { title: "Robotic Process Automation using UiPath", platform: "Infosys Foundation — Finishing School for Employability", date: "July 2025", icon: Shield },
-  { title: "Remote Sensing Data Analytics for Crop Production Forecasting", platform: "ISRO", date: "31 July 2025", icon: Award },
-  { title: "Python Internship Certificate", platform: "YBI Foundation", date: "10 April 2025", icon: Terminal },
-  { title: "Java Basic Certificate", platform: "HackerRank", date: "01 November 2024", icon: Code2 },
+  { title: "Robotic Process Automation using UiPath", platform: "Infosys Foundation — Finishing School for Employability", date: "July 2025", icon: Shield, image_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=80" },
+  { title: "Remote Sensing Data Analytics for Crop Production Forecasting", platform: "ISRO", date: "31 July 2025", icon: Award, image_url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80" },
+  { title: "Python Internship Certificate", platform: "YBI Foundation", date: "10 April 2025", icon: Terminal, image_url: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=400&q=80" },
+  { title: "Java Basic Certificate", platform: "HackerRank", date: "01 November 2024", icon: Code2, image_url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400&q=80" },
 ];
 
 const MARQUEE = ["Python", "Java", "React", "Spring Boot", "MySQL", "HTML", "CSS", "JavaScript", "Arduino", "NodeMCU", "Embedded C", "Git", "UiPath", "REST APIs", "OOP"];
@@ -286,14 +296,14 @@ function PortfolioPage() {
   }, [dark]);
 
   return (
-    <div className="relative min-h-dvh bg-background text-foreground">
+    <div className="relative min-h-dvh bg-transparent text-foreground">
       {/* Skip link */}
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground">Skip to main content</a>
 
       {/* Loading */}
       <AnimatePresence>
         {loading && (
-          <motion.div role="status" aria-live="polite" aria-label="Loading portfolio" exit={{ opacity: 0 }} transition={{ duration: 0.6 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-background">
+          <motion.div role="status" aria-live="polite" aria-label="Loading portfolio" exit={{ opacity: 0 }} transition={{ duration: 0.6 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-black">
             <div className="text-center">
               <motion.div aria-hidden="true" animate={{ rotate: 360 }} transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }} className="mx-auto h-16 w-16 rounded-full border-2 border-transparent" style={{ background: "conic-gradient(from 0deg, transparent, var(--neon), transparent)", WebkitMask: "radial-gradient(closest-side, transparent calc(100% - 3px), #000 calc(100% - 2px))" }} />
               <p className="mt-6 font-mono text-sm text-muted-foreground">Loading portfolio…</p>
@@ -311,13 +321,13 @@ function PortfolioPage() {
         <div className="h-full w-full" style={{ background: "var(--gradient-text)" }} />
       </motion.div>
 
-      {/* Ambient background */}
+      {/* Atmospheric accent overlays over 3D background */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
-        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] animate-blob rounded-full opacity-30" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.5), transparent 60%)" }} />
-        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] animate-blob rounded-full opacity-25" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.5), transparent 60%)", animationDelay: "4s" }} />
-        <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] animate-blob rounded-full opacity-20" style={{ background: "radial-gradient(circle, oklch(0.7 0.18 220 / 0.5), transparent 60%)", animationDelay: "8s" }} />
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(oklch(1 0 0) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+        <div className="absolute inset-0 opacity-25" style={{ background: "var(--gradient-hero)" }} />
+        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] animate-blob rounded-full opacity-15" style={{ background: "radial-gradient(circle, oklch(0.85 0.18 165 / 0.4), transparent 60%)" }} />
+        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] animate-blob rounded-full opacity-15" style={{ background: "radial-gradient(circle, oklch(0.72 0.2 295 / 0.4), transparent 60%)", animationDelay: "4s" }} />
+        <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] animate-blob rounded-full opacity-10" style={{ background: "radial-gradient(circle, oklch(0.7 0.18 220 / 0.4), transparent 60%)", animationDelay: "8s" }} />
+        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: "linear-gradient(oklch(1 0 0) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
       </div>
 
       <Navbar navOpen={menuOpen} setNavOpen={setMenuOpen} dark={dark} setDark={setDark} />
@@ -910,6 +920,7 @@ function Skills() {
    ============================================================ */
 function Projects() {
   const { projects, siteSettings, sections } = usePortfolioData();
+  const [viewMode, setViewMode] = useState<'tabs' | 'grid'>('tabs');
   const items = projects?.length ? projects : PROJECTS;
   const githubUrl = siteSettings?.github_url || FALLBACK_GITHUB;
 
@@ -925,72 +936,113 @@ function Projects() {
           title={section?.subtitle ? <>{section.subtitle}</> : <>Selected <span className="text-gradient">work</span></>} 
           subtitle="A handful of things I've designed, built, and shipped."
         />
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {items.map((p, i) => (
-            <motion.article key={p.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.06 }} whileHover={{ y: -8 }} className="card-premium group relative flex flex-col overflow-hidden">
-              <div aria-hidden="true" className={`relative aspect-[16/9] overflow-hidden bg-gradient-to-br ${p.accent}`}>
-                {p.image_url ? (
-                  p.media_type === 'video' ? (
-                    <ViewportVideo src={p.image_url} className="absolute inset-0 h-full w-full object-cover mix-blend-overlay opacity-80" />
-                  ) : (
-                    <img src={p.image_url} alt={p.title} className="absolute inset-0 h-full w-full object-cover mix-blend-overlay opacity-80" />
-                  )
-                ) : (
-                  <>
-                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-                    <div className="absolute inset-0 grid place-items-center">
-                      <div className="glass-strong grid h-20 w-20 place-items-center rounded-2xl">
-                        {p.icon && <p.icon className="h-9 w-9 text-white/95" />}
-                      </div>
-                    </div>
-                  </>
-                )}
-                <span className="absolute left-4 top-4 rounded-full glass-strong px-3 py-1 text-xs">{p.tag}</span>
-              </div>
-              <div className="flex flex-1 flex-col p-6">
-                <h3 className="font-display text-xl font-semibold">{p.title}</h3>
-                <p className="mt-2 flex-1 text-sm text-muted-foreground">{p.desc}</p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {p.tech?.map((t: any) => (
-                    <span key={t} className="rounded-md bg-white/10 px-2 py-0.5 font-mono text-[11px] text-muted-foreground">{t}</span>
-                  ))}
-                </div>
-                <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-4 text-sm">
-                  <span className="inline-flex items-center gap-1 text-muted-foreground"><Sparkles aria-hidden="true" className="h-3.5 w-3.5" /> Academic Project</span>
-                  {(() => {
-                    const isEmbedded = Boolean(p.is_embedded ?? p.embedded);
-                    const showGithub = p.has_github !== undefined ? Boolean(p.has_github) : !isEmbedded;
-                    const projectGithubUrl = p.github_url?.trim() ? p.github_url.trim() : githubUrl;
 
-                    if (showGithub) {
-                      return (
-                        <a
-                          href={projectGithubUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
-                          aria-label={`View ${p.title} related work on GitHub`}
-                        >
-                          GitHub <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
-                        </a>
-                      );
-                    }
-
-                    if (isEmbedded) {
-                      return (
-                        <span className="inline-flex items-center gap-1 text-muted-foreground/80">
-                          <CircuitBoard aria-hidden="true" className="h-3.5 w-3.5" /> Hardware Build
-                        </span>
-                      );
-                    }
-
-                    return null;
-                  })()}
-                </div>
-              </div>
-            </motion.article>
-          ))}
+        <div className="flex justify-center mb-8">
+          <div className="inline-flex p-1 rounded-xl bg-white/5 border border-border/40 backdrop-blur-md">
+            <button
+              type="button"
+              onClick={() => setViewMode('tabs')}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                viewMode === 'tabs'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <GalleryVerticalEnd className="h-3.5 w-3.5" />
+              Interactive Showcase
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                viewMode === 'grid'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              Grid View
+            </button>
+          </div>
         </div>
+
+        {viewMode === 'tabs' ? (
+          <div className="relative rounded-3xl p-3 sm:p-5 md:p-6 bg-zinc-950/40 border border-white/10 backdrop-blur-md shadow-2xl">
+            <VerticalTabs
+              items={items}
+              hideHeader={true}
+              autoPlayDuration={10000}
+              fallbackGithubUrl={githubUrl}
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {items.map((p, i) => (
+              <motion.article key={p.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.06 }} whileHover={{ y: -8 }} className="card-premium group relative flex flex-col overflow-hidden">
+                <div aria-hidden="true" className={`relative aspect-[16/9] overflow-hidden bg-gradient-to-br ${p.accent}`}>
+                  {p.image_url ? (
+                    p.media_type === 'video' ? (
+                      <ViewportVideo src={p.image_url} className="absolute inset-0 h-full w-full object-cover mix-blend-overlay opacity-80" />
+                    ) : (
+                      <img src={p.image_url} alt={p.title} className="absolute inset-0 h-full w-full object-cover mix-blend-overlay opacity-80" />
+                    )
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+                      <div className="absolute inset-0 grid place-items-center">
+                        <div className="glass-strong grid h-20 w-20 place-items-center rounded-2xl">
+                          {p.icon && <p.icon className="h-9 w-9 text-white/95" />}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  <span className="absolute left-4 top-4 rounded-full glass-strong px-3 py-1 text-xs">{p.tag}</span>
+                </div>
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="font-display text-xl font-semibold">{p.title}</h3>
+                  <p className="mt-2 flex-1 text-sm text-muted-foreground">{p.desc}</p>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {p.tech?.map((t: any) => (
+                      <span key={t} className="rounded-md bg-white/10 px-2 py-0.5 font-mono text-[11px] text-muted-foreground">{t}</span>
+                    ))}
+                  </div>
+                  <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-4 text-sm">
+                    <span className="inline-flex items-center gap-1 text-muted-foreground"><Sparkles aria-hidden="true" className="h-3.5 w-3.5" /> Academic Project</span>
+                    {(() => {
+                      const isEmbedded = Boolean(p.is_embedded ?? p.embedded);
+                      const showGithub = p.has_github !== undefined ? Boolean(p.has_github) : !isEmbedded;
+                      const projectGithubUrl = p.github_url?.trim() ? p.github_url.trim() : githubUrl;
+
+                      if (showGithub) {
+                        return (
+                          <a
+                            href={projectGithubUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-primary hover:gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded"
+                            aria-label={`View ${p.title} related work on GitHub`}
+                          >
+                            GitHub <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
+                          </a>
+                        );
+                      }
+
+                      if (isEmbedded) {
+                        return (
+                          <span className="inline-flex items-center gap-1 text-muted-foreground/80">
+                            <CircuitBoard aria-hidden="true" className="h-3.5 w-3.5" /> Hardware Build
+                          </span>
+                        );
+                      }
+
+                      return null;
+                    })()}
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -1051,8 +1103,17 @@ function Services() {
   const section = sections?.find(s => s.id === 'services');
   if (sections && section && !section.is_visible) return null;
 
+  const carouselItems = items.map((s: any, i: number) => ({
+    id: String(s.id ?? i + 1),
+    title: s.title,
+    description: s.desc || s.description || "",
+    icon: s.icon,
+    tag: s.tag || "Service",
+    display_order: s.display_order !== undefined && s.display_order !== null ? s.display_order : i + 1,
+  }));
+
   return (
-    <section id="services" aria-labelledby="services-title" className="relative px-4 py-24 sm:px-6">
+    <section id="services" aria-labelledby="services-title" className="relative px-4 py-24 sm:px-6 overflow-hidden">
       <div className="mx-auto max-w-6xl">
         <SectionHeading 
           id="services-title" 
@@ -1060,16 +1121,8 @@ function Services() {
           title={section?.subtitle ? <>{section.subtitle}</> : <>How I can <span className="text-gradient">help</span></>} 
           subtitle="From landing pages to full products and hardware prototypes."
         />
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {items.map((s, i) => (
-            <motion.div key={s.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.04 }} whileHover={{ y: -6 }} className="card-premium group relative overflow-hidden p-6">
-              <div aria-hidden="true" className="mb-4 grid h-11 w-11 place-items-center rounded-xl transition-transform group-hover:scale-110" style={{ background: "var(--gradient-text)" }}>
-                <s.icon className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <h3 className="font-display font-semibold">{s.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
-            </motion.div>
-          ))}
+        <div className="relative mx-auto max-w-4xl pt-4">
+          <CircularCarousel items={carouselItems} autoPlayInterval={4500} />
         </div>
       </div>
     </section>
